@@ -1,51 +1,24 @@
-const express = require('express');
+const restify = require("restify");
 const {RtcTokenBuilder, RtcRole} = require('agora-access-token');
-
-const APP_ID = "18d720c5d67a4a2f8fb12d7cbef82537";
-const APP_CERTIFICATE = "772093d5dcff400fafb3f938d5efc965";
-
-const app = express();
-
-const nocache = (req, resp, next) => {
-    resp.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-    resp.header('Cache-Control', '-1');
-    resp.header('Pragma', 'no-cache');
-    next();
+const server = restify.createServer();
+// Middleware
+server.use(restify.plugins.bodyParser());
+server.post("/generate_access_token/", (req, res, next) => {
+    const { channel, role } = req.body;
+    if (!channel){
+        return res.send(400);
+    }
+// get role
+let callRole = RtcRole.SUBSCRIBER;
+if ( role === "publisher"){
+    callRole = RtcRole.PUBLISHER;
 }
-
-const generateAccessToken = (req, resp) => {
-    // set response header
-    resp.header('Acess-Control-Allow-Origin', '*');
-    // get channel name
-    const channelName = req.query.channelName;
-    if (!channelName) {
-        return resp.status(500).json({'error': 'channel is required'});
-    }
-    // get uid
-    let uid = req.query.uid;
-    if (!uid || uid == '') {
-        uid = 0;
-    }
-    // get role
-    let role = RtcRole.SUBSCRIBER;
-    if (req.query.role == 'publisher') {
-        role = RtcRole.PUBLISHER;
-    }
-    // get the expire time
-    let expireTime = req.query.expiretime;
-    if (!expireTime || expireTime == '') {
-        expireTime = 3600;
-    } else {
-        expireTime = parseInt(expireTime, 10);
-    }
-    // calculate privilege expire time
-    const currentTime = Math.floor(Date.now() / 1000);
-    const privilegeExpireTime = currentTime + expireTime;
-    // build the token
-    const token = RtcTokenBuilder.buildTokenWithUid(APP_ID, APP_CERTIFICATE, channelName, uid, role, privilegeExpireTime);
-    // return the token
-    return resp.json({'token': token});
-}
-
-app.get('/access_token', nocache, generateAccessToken);
-
+let expireTime = 3600;
+let uid = 0;
+// calculate privilege expire time
+const currentTime = Math.floor(Date.now() / 1000);
+const privilegeExpireTime = currentTime + expireTime;
+const token = RtcTokenBuilder.buildTokenWithUid(AGORA_APP_ID, AGORA_APP_CERTIFICATE, channel, uid, callRole, privilegeExpireTime);
+res.send({ token });
+});
+server.listen(process.env.PORT || 5500);

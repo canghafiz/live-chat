@@ -21,6 +21,7 @@ export 'package:live_chat/view/page/chat/detail/image_detail_page.dart';
 export 'package:live_chat/view/page/main_page.dart';
 export 'package:live_chat/view/page/call/voice_call_page.dart';
 export 'package:live_chat/view/page/call/detail_call_page.dart';
+export 'package:live_chat/view/page/call/video_call_page.dart';
 
 // Widget
 export 'package:live_chat/view/widget/tag/personal_or_group_tag_widget.dart';

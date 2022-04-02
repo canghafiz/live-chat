@@ -155,9 +155,13 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                     size: 40,
                                     icon: Icons.mic,
                                     onTap: () async {
-                                      RecordService.record(context);
-                                      // Update State
-                                      timerService.startTime();
+                                      RecordService.record(
+                                        context,
+                                        () {
+                                          // Update State
+                                          timerService.startTime();
+                                        },
+                                      );
                                     },
                                   )
                                 : circularButton(

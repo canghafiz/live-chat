@@ -1,12 +1,10 @@
 class Channel {
   Channel({
-    this.name,
     this.onOtherCall,
     this.proceess,
-    this.token,
   });
 
-  String? proceess, name, token;
+  String? proceess;
   bool? onOtherCall;
 
   // Map

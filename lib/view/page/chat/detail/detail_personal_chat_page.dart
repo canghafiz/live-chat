@@ -96,7 +96,15 @@ class DetailPersonalChatPage extends StatelessWidget {
                     ),
                     // Video
                     IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        // Navigate
+                        RouteHandle.toVideoCall(
+                          context: context,
+                          userId: userId,
+                          yourId: yourId,
+                          type: CallType.caller,
+                        );
+                      },
                       icon: const Icon(
                         Icons.videocam,
                         color: Colors.white,

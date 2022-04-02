@@ -11,13 +11,16 @@ import 'package:rxdart/rxdart.dart';
 class RecordService {
   static final RecordMp3 _instance = RecordMp3.instance;
 
-  static record(BuildContext context) async {
+  static record(BuildContext context, Function? timer) async {
     PermissionService.microphone().then(
       (allow) {
         if (allow) {
           if (allow) {
+            // Call Timer
+            timer?.call();
             FunctionUtils.recorderFilePath().then(
               (path) {
+                // Start Record
                 _instance.start(
                   path,
                   (type) => debugPrint("Record error--->$type"),

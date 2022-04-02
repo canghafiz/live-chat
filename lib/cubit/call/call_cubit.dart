@@ -17,19 +17,23 @@ class CallCubit extends Cubit<CallState> {
       : super(CallState(
           micOn: true,
           speaker: true,
+          cameraOn: true,
         ));
 
-  void update(CallState value) {
-    emit(value);
+  void updateVoice({required bool mic, required bool speaker}) {
+    emit(CallState(
+      micOn: mic,
+      speaker: speaker,
+      cameraOn: state.cameraOn,
+    ));
   }
 
-  void updateJoined(bool value) {
-    emit(
-      CallState(
-        micOn: state.micOn,
-        speaker: state.speaker,
-      ),
-    );
+  void updateVideo(bool cameraOn) {
+    emit(CallState(
+      micOn: state.micOn,
+      speaker: state.speaker,
+      cameraOn: cameraOn,
+    ));
   }
 
   void updateMic(bool value) {
@@ -37,6 +41,7 @@ class CallCubit extends Cubit<CallState> {
       CallState(
         micOn: value,
         speaker: state.speaker,
+        cameraOn: state.cameraOn,
       ),
     );
   }
@@ -46,6 +51,17 @@ class CallCubit extends Cubit<CallState> {
       CallState(
         micOn: state.micOn,
         speaker: value,
+        cameraOn: state.cameraOn,
+      ),
+    );
+  }
+
+  void updateCamera(bool value) {
+    emit(
+      CallState(
+        micOn: state.micOn,
+        speaker: state.speaker,
+        cameraOn: value,
       ),
     );
   }

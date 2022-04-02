@@ -23,22 +23,37 @@ class VoiceCallPage extends StatefulWidget {
 
 class _VoiceCallPageState extends State<VoiceCallPage>
     with WidgetsBindingObserver {
+  int remoteId = 0;
+
+  void udpateRemoteId(int value) {
+    setState(() {
+      remoteId = value;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     setState(() {});
-    RtcVoiceService.initEngine().then((_) {
+    RtcService.initVoiceEngine((value) {
+      udpateRemoteId(value);
+    }).then((_) {
       // Get Token
       RtcApiService.getChannelToken(
-        channel: "voice",
-        role: "audience",
+        channel: (widget.callType == CallType.caller)
+            ? widget.yourId
+            : widget.userId,
+        role: (widget.callType == CallType.caller) ? "publisher" : "audience",
+        uid: (widget.callType == CallType.caller) ? 0 : 1,
       ).then((token) {
         if (token != null) {
           // Join
-          RtcVoiceService.joinChannel(
-            channel: "voice",
+          RtcService.joinChannel(
+            channel: (widget.callType == CallType.caller)
+                ? widget.yourId
+                : widget.userId,
             token: token,
-            uid: 0,
+            uid: remoteId,
           );
         }
       });
@@ -49,12 +64,12 @@ class _VoiceCallPageState extends State<VoiceCallPage>
   void dispose() {
     super.dispose();
     // Destroy
-    RtcVoiceService.destroy();
+    RtcService.destroy();
   }
 
   void leaveChannel() {
-    RtcVoiceService.leaveChannel().then((_) {
-      RtcVoiceService.destroy();
+    RtcService.leaveChannel().then((_) {
+      RtcService.destroy();
       Navigator.pop(context);
     });
   }
@@ -62,8 +77,18 @@ class _VoiceCallPageState extends State<VoiceCallPage>
   @override
   Widget build(BuildContext context) {
     final bool isCaller = widget.callType == CallType.caller;
+    // Update Mic
+    RtcService.switchMicrophone(
+      context: context,
+      mic: false,
+    );
+    // Update Speaker
+    RtcService.switchSpeakerphone(
+      context: context,
+      speaker: false,
+    );
     // Update State
-    CallCubitHandle.read(context).update(CallState(micOn: true, speaker: true));
+    CallCubitHandle.read(context).updateVoice(mic: true, speaker: true);
     return WillPopScope(
       onWillPop: () async {
         leaveChannel();
@@ -168,7 +193,7 @@ class _VoiceCallPageState extends State<VoiceCallPage>
                               selector: (state) => state.micOn,
                               builder: (context, isOn) => callButtonWidget(
                                 onTap: () {
-                                  RtcVoiceService.switchMicrophone(
+                                  RtcService.switchMicrophone(
                                     context: context,
                                     mic: isOn,
                                   );
@@ -205,7 +230,7 @@ class _VoiceCallPageState extends State<VoiceCallPage>
                               selector: (state) => state.speaker,
                               builder: (context, isOn) => callButtonWidget(
                                 onTap: () {
-                                  RtcVoiceService.switchSpeakerphone(
+                                  RtcService.switchSpeakerphone(
                                     context: context,
                                     speaker: isOn,
                                   );

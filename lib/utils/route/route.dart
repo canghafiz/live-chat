@@ -213,6 +213,24 @@ class RouteHandle {
     );
   }
 
+  static toVideoCall({
+    required BuildContext context,
+    required String userId,
+    required String yourId,
+    required CallType type,
+  }) {
+    Navigator.push(
+      context,
+      _goToPage(
+        VideoCallPage(
+          callType: type,
+          userId: userId,
+          yourId: yourId,
+        ),
+      ),
+    );
+  }
+
   //  Web
   static toWeb(BuildContext context) {
     Navigator.push(context, _goToPage(const WebPage()));

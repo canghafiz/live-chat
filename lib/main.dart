@@ -35,6 +35,7 @@ class MainApp extends StatelessWidget {
         BlocProvider<ChatCubit>(create: (_) => ChatCubit()),
         BlocProvider<GroupCubit>(create: (_) => GroupCubit()),
         BlocProvider<CallCubit>(create: (_) => CallCubit()),
+        BlocProvider<AgoraCubit>(create: (_) => AgoraCubit()),
         ChangeNotifierProvider<TimerService>(create: (_) => TimerService()),
       ],
       child: Sizer(

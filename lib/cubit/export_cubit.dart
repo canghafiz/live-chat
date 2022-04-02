@@ -7,3 +7,4 @@ export 'package:live_chat/cubit/tag/tag_cubit.dart';
 export 'package:live_chat/cubit/chat/chat_cubit.dart';
 export 'package:live_chat/cubit/group/group_cubit.dart';
 export 'package:live_chat/cubit/call/call_cubit.dart';
+export 'package:live_chat/cubit/agora/agora_cubit.dart';

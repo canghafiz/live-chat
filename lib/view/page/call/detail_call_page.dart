@@ -96,7 +96,15 @@ class DetailCallPage extends StatelessWidget {
                           ),
                         ),
                         GestureDetector(
-                          onTap: () {},
+                          onTap: () {
+                            // Navigate
+                            RouteHandle.toVideoCall(
+                              context: context,
+                              userId: call.userId!,
+                              yourId: yourId,
+                              type: CallType.caller,
+                            );
+                          },
                           child: const Icon(
                             Icons.videocam,
                             color: ColorConfig.colorPrimary,

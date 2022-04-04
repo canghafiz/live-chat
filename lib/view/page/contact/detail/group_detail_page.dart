@@ -116,7 +116,15 @@ class GroupDetailPage extends StatelessWidget {
                                         ),
                                         // Btn Take
                                         GestureDetector(
-                                          onTap: () {},
+                                          onTap: () {
+                                            // Show Modal Bottom
+                                            FunctionUtils.showCustomBottomSheet(
+                                              context: context,
+                                              content: PhotoBottomWidget(
+                                                dbUpdate: (value) {},
+                                              ),
+                                            );
+                                          },
                                           child: Align(
                                             alignment: Alignment.bottomRight,
                                             child: Container(
@@ -164,7 +172,7 @@ class GroupDetailPage extends StatelessWidget {
                                         inputType: null,
                                         intialValue: group.name!,
                                         title: "Name",
-                                        onSubmit: () {},
+                                        onSubmit: (value) {},
                                       ),
                                     );
                                   },

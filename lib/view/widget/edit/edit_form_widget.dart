@@ -16,7 +16,7 @@ class EditFormWidget extends StatefulWidget {
   final TextInputType? inputType;
   final List<TextInputFormatter>? inputFormater;
   final String title, intialValue;
-  final Function onSubmit;
+  final Function(String) onSubmit;
 
   @override
   State<EditFormWidget> createState() => _EditFormWidgetState();
@@ -104,7 +104,7 @@ class _EditFormWidgetState extends State<EditFormWidget> {
                   TextButton(
                     onPressed: () {
                       if (formKey.currentState!.validate()) {
-                        widget.onSubmit.call();
+                        widget.onSubmit.call(controller.text);
                       }
                     },
                     child: Text(

@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class FirebaseUtils {
   static final auth = FirebaseAuth.instance;
+  static final storage = FirebaseStorage.instance;
   static final _db = FirebaseFirestore.instance;
   static CollectionReference dbUsers() {
     return _db.collection('Users');

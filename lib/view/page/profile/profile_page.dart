@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:live_chat/cubit/export_cubit.dart';
 import 'package:live_chat/model/export_model.dart';
 import 'package:live_chat/service/export_service.dart';
@@ -69,13 +70,80 @@ class ProfilePage extends StatelessWidget {
                         child: Stack(
                           children: [
                             // Photo
-                            BasicPhotoProfile(
-                              size: 124,
-                              url: user.profile,
+                            GestureDetector(
+                              onTap: () {
+                                if (user.profile != null) {
+                                  // Navigate
+                                  RouteHandle.toDetailImage(
+                                    context: context,
+                                    url: user.profile!,
+                                  );
+                                }
+                              },
+                              child: BasicPhotoProfile(
+                                size: 124,
+                                url: user.profile,
+                              ),
                             ),
                             // Btn Take
                             GestureDetector(
-                              onTap: () {},
+                              onTap: () {
+                                // Show Modal Bottom
+                                FunctionUtils.showCustomBottomSheet(
+                                  context: context,
+                                  content: PhotoBottomWidget(
+                                    dbUpdate: (value) {
+                                      if (user.profile != null) {
+                                        // Update Storage
+                                        FirebaseStorageService.deleteImage(
+                                          user.profile!,
+                                        ).then(
+                                          (_) {
+                                            Navigator.pop(context);
+                                            // Update Db
+                                            User.dbService.updatePhotoProfile(
+                                              userId: userId,
+                                              url: null,
+                                            );
+
+                                            // Update Storage
+                                            FirebaseStorageService.uploadImage(
+                                              folderName: User.profileUrl,
+                                              fileName: userId,
+                                              pickedFile: XFile(value.path),
+                                            ).then(
+                                              (url) {
+                                                // Update Db
+                                                User.dbService
+                                                    .updatePhotoProfile(
+                                                  userId: userId,
+                                                  url: url,
+                                                );
+                                              },
+                                            );
+                                          },
+                                        );
+                                        return;
+                                      }
+
+                                      // Update Storage
+                                      FirebaseStorageService.uploadImage(
+                                        folderName: User.profileUrl,
+                                        fileName: userId,
+                                        pickedFile: XFile(value.path),
+                                      ).then(
+                                        (url) {
+                                          // Update Db
+                                          User.dbService.updatePhotoProfile(
+                                            userId: userId,
+                                            url: url,
+                                          );
+                                        },
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
                               child: Align(
                                 alignment: Alignment.bottomRight,
                                 child: Container(
@@ -129,7 +197,32 @@ class ProfilePage extends StatelessWidget {
                                   inputType: null,
                                   intialValue: user.name!,
                                   title: "Name",
-                                  onSubmit: () {},
+                                  onSubmit: (value) {
+                                    Navigator.pop(context);
+                                    // Call Db
+                                    User.dbService
+                                        .updateName(userId: userId, name: value)
+                                        .then(
+                                      (success) {
+                                        if (success) {
+                                          // show Snackbar
+                                          showCustomSnackbar(
+                                            context: context,
+                                            text: "Success update name",
+                                            color: Colors.green,
+                                          );
+                                          return;
+                                        }
+                                        // show Snackbar
+                                        showCustomSnackbar(
+                                          context: context,
+                                          text: "Failed update name",
+                                          color: Colors.red,
+                                        );
+                                        return;
+                                      },
+                                    );
+                                  },
                                 ),
                               );
                             },

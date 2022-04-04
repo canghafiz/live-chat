@@ -21,3 +21,4 @@ export 'package:live_chat/utils/widget/button.dart';
 export 'package:live_chat/utils/widget/textfield.dart';
 export 'package:live_chat/utils/widget/dialog.dart';
 export 'package:live_chat/utils/widget/profile.dart';
+export 'package:live_chat/utils/widget/snackbar.dart';

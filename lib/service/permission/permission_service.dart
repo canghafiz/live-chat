@@ -11,7 +11,7 @@ class PermissionService {
     return true;
   }
 
-  static Future<bool> gallery() async {
+  static Future<bool> camera() async {
     if (!await Permission.camera.isGranted) {
       PermissionStatus status = await Permission.camera.request();
       if (status != PermissionStatus.granted) {

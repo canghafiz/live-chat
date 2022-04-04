@@ -41,3 +41,4 @@ export 'package:live_chat/view/widget/contact/bottom_contact_widget.dart';
 export 'package:live_chat/view/widget/contact/group_members_widget.dart';
 export 'package:live_chat/view/widget/edit/edit_form_widget.dart';
 export 'package:live_chat/view/widget/call/call_button_widget.dart';
+export 'package:live_chat/view/widget/photo/photo_bottom_widget.dart';

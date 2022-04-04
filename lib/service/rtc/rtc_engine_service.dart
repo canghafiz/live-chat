@@ -3,16 +3,14 @@ import 'dart:developer';
 
 import 'package:agora_rtc_engine/rtc_engine.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:live_chat/cubit/export_cubit.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
 
-abstract class RtcEnvi {
-  static String appid = "18d720c5d67a4a2f8fb12d7cbef82537";
-}
-
 class RtcApiService {
-  static const _url = "https://agora-streaming-api.herokuapp.com";
+  static final _url =
+      dotenv.get('RTC_API_URL', fallback: 'RTC_API_URL not found');
 
   static Future<String?> getChannelToken({
     required String channel,
@@ -63,7 +61,9 @@ class RtcService {
     // Retrieve Permissions
     await [Permission.microphone].request();
 
-    _engine = await RtcEngine.create(RtcEnvi.appid);
+    _engine = await RtcEngine.create(
+      dotenv.get('RTC_APP_ID', fallback: 'RTC_APP_ID not found'),
+    );
     _addListener((value) {
       updateUid.call(value);
     });
@@ -78,7 +78,9 @@ class RtcService {
     // Retrieve Premissions
     await [Permission.microphone, Permission.camera].request();
 
-    _engine = await RtcEngine.create(RtcEnvi.appid);
+    _engine = await RtcEngine.create(
+      dotenv.get('RTC_APP_ID', fallback: 'RTC_APP_ID not found'),
+    );
     _addListener((value) {
       updateUid?.call(value);
     });

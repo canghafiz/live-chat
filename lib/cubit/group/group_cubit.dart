@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -14,20 +16,24 @@ class GroupCubitHandle {
 }
 
 class GroupCubit extends Cubit<GroupState> {
-  GroupCubit() : super(GroupState([]));
+  GroupCubit() : super(GroupState(usersId: [], imageFile: null));
 
   void add(String userId) {
     state.usersId.add(userId);
-    emit(GroupState(state.usersId));
+    emit(GroupState(usersId: state.usersId, imageFile: state.imageFile));
   }
 
   void delete(int index) {
     state.usersId.removeAt(index);
-    emit(GroupState(state.usersId));
+    emit(GroupState(usersId: state.usersId, imageFile: state.imageFile));
   }
 
   void clear() {
     state.usersId.clear();
-    emit(GroupState(state.usersId));
+    emit(GroupState(usersId: state.usersId, imageFile: state.imageFile));
+  }
+
+  void updateImage(File? value) {
+    emit(GroupState(usersId: state.usersId, imageFile: value));
   }
 }

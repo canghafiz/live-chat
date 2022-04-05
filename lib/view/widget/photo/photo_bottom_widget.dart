@@ -10,8 +10,12 @@ class PhotoBottomWidget extends StatelessWidget {
   const PhotoBottomWidget({
     Key? key,
     required this.dbUpdate,
+    required this.imageNotNull,
+    required this.delete,
   }) : super(key: key);
+  final bool imageNotNull;
   final Function(File) dbUpdate;
+  final Function delete;
 
   @override
   Widget build(BuildContext context) {
@@ -93,6 +97,24 @@ class PhotoBottomWidget extends StatelessWidget {
               color: (isDark) ? Colors.white : ColorConfig.colorDark,
             ),
           ),
+          (imageNotNull)
+              ? ListTile(
+                  onTap: () {
+                    delete.call();
+                  },
+                  title: Text(
+                    "Delete",
+                    style: FontConfig.medium(
+                      size: 14,
+                      color: (isDark) ? Colors.white : ColorConfig.colorDark,
+                    ),
+                  ),
+                  trailing: Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    color: (isDark) ? Colors.white : ColorConfig.colorDark,
+                  ),
+                )
+              : const SizedBox(),
         ],
       ),
     );

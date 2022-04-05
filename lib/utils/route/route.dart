@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:live_chat/model/export_model.dart';
 import 'package:live_chat/utils/const/variable.dart';
@@ -67,11 +69,12 @@ class RouteHandle {
 
   static toDetailImage({
     required BuildContext context,
-    required String url,
+    required String? url,
+    required File? file,
   }) {
     Navigator.push(
       context,
-      _goToPage(ImageDetailPage(url: url)),
+      _goToPage(ImageDetailPage(url: url, file: file)),
     );
   }
 

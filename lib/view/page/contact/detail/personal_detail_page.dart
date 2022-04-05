@@ -81,6 +81,7 @@ class PersonalDetailPage extends StatelessWidget {
                               RouteHandle.toDetailImage(
                                 context: context,
                                 url: user.profile!,
+                                file: null,
                               );
                             }
                           },
@@ -137,7 +138,15 @@ class PersonalDetailPage extends StatelessWidget {
                             ),
                             // Video
                             IconButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                // Navigate
+                                RouteHandle.toVideoCall(
+                                  context: context,
+                                  userId: userId,
+                                  yourId: yourId,
+                                  type: CallType.caller,
+                                );
+                              },
                               icon: Icon(
                                 Icons.videocam,
                                 color: (isDark)
@@ -226,7 +235,27 @@ class PersonalDetailPage extends StatelessWidget {
                                   .where((data) => data['user_id'] == userId)
                                   .isNotEmpty)
                               ? ListTile(
-                                  onTap: () {},
+                                  onTap: () {
+                                    // Update Db
+                                    User.dbService
+                                        .deleteContact(
+                                      yourId: yourId,
+                                      userId: userId,
+                                    )
+                                        .then(
+                                      (success) {
+                                        if (success) {
+                                          // Show Snackbar
+                                          showCustomSnackbar(
+                                            context: context,
+                                            text:
+                                                "This user has been delete from contact",
+                                            color: Colors.green,
+                                          );
+                                        }
+                                      },
+                                    );
+                                  },
                                   leading: const Icon(
                                     Icons.delete,
                                     color: Colors.white,
@@ -240,7 +269,27 @@ class PersonalDetailPage extends StatelessWidget {
                                   ),
                                 )
                               : ListTile(
-                                  onTap: () {},
+                                  onTap: () {
+                                    // Update Db
+                                    User.dbService
+                                        .addContact(
+                                      yourId: yourId,
+                                      userId: userId,
+                                    )
+                                        .then(
+                                      (success) {
+                                        if (success) {
+                                          // Show Snackbar
+                                          showCustomSnackbar(
+                                            context: context,
+                                            text:
+                                                "This user has been add to contact",
+                                            color: Colors.green,
+                                          );
+                                        }
+                                      },
+                                    );
+                                  },
                                   leading: const Icon(
                                     Icons.add,
                                     color: Colors.white,
@@ -264,7 +313,14 @@ class PersonalDetailPage extends StatelessWidget {
                                       data['block'])
                                   .isNotEmpty)
                               ? ListTile(
-                                  onTap: () {},
+                                  onTap: () {
+                                    // Update Db
+                                    User.dbService.updateBlock(
+                                      yourId: yourId,
+                                      userId: userId,
+                                      value: false,
+                                    );
+                                  },
                                   leading: const Icon(
                                     Icons.block,
                                     color: Colors.white,
@@ -278,7 +334,14 @@ class PersonalDetailPage extends StatelessWidget {
                                   ),
                                 )
                               : ListTile(
-                                  onTap: () {},
+                                  onTap: () {
+                                    // Update Db
+                                    User.dbService.updateBlock(
+                                      yourId: yourId,
+                                      userId: userId,
+                                      value: true,
+                                    );
+                                  },
                                   leading: const Icon(
                                     Icons.block,
                                     color: Colors.white,

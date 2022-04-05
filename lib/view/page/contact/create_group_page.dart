@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:live_chat/cubit/export_cubit.dart';
@@ -29,6 +31,8 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Update State
+    GroupCubitHandle.read(context).updateImage(null);
     return BlocSelector<ThemeCubit, ThemeState, bool>(
       selector: (state) => state.isDark,
       builder: (context, isDark) => Scaffold(
@@ -63,39 +67,71 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
               children: [
                 const SizedBox(height: 24),
                 // Photo
-                SizedBox(
-                  width: 124,
-                  height: 124,
-                  child: Stack(
-                    children: [
-                      // Photo
-                      GestureDetector(
-                        onTap: () {},
-                        child: const BasicPhotoProfile(
-                          size: 124,
-                          url: null,
+                BlocSelector<GroupCubit, GroupState, File?>(
+                  selector: (state) => state.imageFile,
+                  builder: (context, file) => SizedBox(
+                    width: 124,
+                    height: 124,
+                    child: Stack(
+                      children: [
+                        // Photo
+                        GestureDetector(
+                          onTap: () {
+                            if (file != null) {
+                              // Navigate
+                              RouteHandle.toDetailImage(
+                                context: context,
+                                url: null,
+                                file: file,
+                              );
+                            }
+                          },
+                          child: ProfileCreateGroupWidget(
+                            file: file,
+                            isDark: isDark,
+                          ),
                         ),
-                      ),
-                      // Btn Take
-                      GestureDetector(
-                        onTap: () {},
-                        child: Align(
-                          alignment: Alignment.bottomRight,
-                          child: Container(
-                            width: 36,
-                            height: 36,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: ColorConfig.colorPrimary,
-                            ),
-                            child: const Icon(
-                              Icons.camera_alt,
-                              color: Colors.white,
+                        // Btn Take
+                        GestureDetector(
+                          onTap: () {
+                            // Show Modal Bottom
+                            FunctionUtils.showCustomBottomSheet(
+                              context: context,
+                              content: PhotoBottomWidget(
+                                imageNotNull: file != null,
+                                delete: () {
+                                  // Update State
+                                  GroupCubitHandle.read(context)
+                                      .updateImage(null);
+                                  Navigator.pop(context);
+                                },
+                                dbUpdate: (value) {
+                                  // Update State
+                                  GroupCubitHandle.read(context)
+                                      .updateImage(value);
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            );
+                          },
+                          child: Align(
+                            alignment: Alignment.bottomRight,
+                            child: Container(
+                              width: 36,
+                              height: 36,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: ColorConfig.colorPrimary,
+                              ),
+                              child: const Icon(
+                                Icons.camera_alt,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),

@@ -77,6 +77,7 @@ class ProfilePage extends StatelessWidget {
                                   RouteHandle.toDetailImage(
                                     context: context,
                                     url: user.profile!,
+                                    file: null,
                                   );
                                 }
                               },
@@ -92,40 +93,23 @@ class ProfilePage extends StatelessWidget {
                                 FunctionUtils.showCustomBottomSheet(
                                   context: context,
                                   content: PhotoBottomWidget(
+                                    imageNotNull: user.profile != null,
+                                    delete: () {
+                                      // Update Storage
+                                      FirebaseStorageService.deleteImage(
+                                        user.profile!,
+                                      ).then(
+                                        (_) {
+                                          Navigator.pop(context);
+                                          // Update Db
+                                          User.dbService.updatePhotoProfile(
+                                            userId: userId,
+                                            url: null,
+                                          );
+                                        },
+                                      );
+                                    },
                                     dbUpdate: (value) {
-                                      if (user.profile != null) {
-                                        // Update Storage
-                                        FirebaseStorageService.deleteImage(
-                                          user.profile!,
-                                        ).then(
-                                          (_) {
-                                            Navigator.pop(context);
-                                            // Update Db
-                                            User.dbService.updatePhotoProfile(
-                                              userId: userId,
-                                              url: null,
-                                            );
-
-                                            // Update Storage
-                                            FirebaseStorageService.uploadImage(
-                                              folderName: User.profileUrl,
-                                              fileName: userId,
-                                              pickedFile: XFile(value.path),
-                                            ).then(
-                                              (url) {
-                                                // Update Db
-                                                User.dbService
-                                                    .updatePhotoProfile(
-                                                  userId: userId,
-                                                  url: url,
-                                                );
-                                              },
-                                            );
-                                          },
-                                        );
-                                        return;
-                                      }
-
                                       // Update Storage
                                       FirebaseStorageService.uploadImage(
                                         folderName: User.profileUrl,

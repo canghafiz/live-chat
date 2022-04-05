@@ -16,6 +16,20 @@ class GroupDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    void addMember() {
+      // Update Group Db
+      Group.dbService.addMember(groupId: groupId, userId: yourId);
+      // Update User Db
+      User.dbService.joinGroup(yourId: yourId, groupId: groupId);
+    }
+
+    void unMember() {
+      // Update Group Db
+      Group.dbService.deleteMember(groupId: groupId, userId: yourId);
+      // Update User Db
+      User.dbService.outGroup(yourId: yourId, groupId: groupId);
+    }
+
     return BlocSelector<ThemeCubit, ThemeState, bool>(
       selector: (state) => state.isDark,
       builder: (context, isDark) => Scaffold(
@@ -85,6 +99,7 @@ class GroupDetailPage extends StatelessWidget {
                                         RouteHandle.toDetailImage(
                                           context: context,
                                           url: group.profile!,
+                                          file: null,
                                         );
                                       }
                                     },
@@ -106,6 +121,7 @@ class GroupDetailPage extends StatelessWidget {
                                               RouteHandle.toDetailImage(
                                                 context: context,
                                                 url: group.profile!,
+                                                file: null,
                                               );
                                             }
                                           },
@@ -121,6 +137,9 @@ class GroupDetailPage extends StatelessWidget {
                                             FunctionUtils.showCustomBottomSheet(
                                               context: context,
                                               content: PhotoBottomWidget(
+                                                imageNotNull:
+                                                    group.profile != null,
+                                                delete: () {},
                                                 dbUpdate: (value) {},
                                               ),
                                             );
@@ -327,112 +346,77 @@ class GroupDetailPage extends StatelessWidget {
                                                 ),
                                               ),
                                               Column(
-                                                children: snapshot.data!.docs
-                                                    .map((doc) {
+                                                children:
+                                                    group.members!.map((data) {
                                                   // Object
-                                                  var filter = group.members!
-                                                      .where((data) {
-                                                    // Object
-                                                    final Member member =
-                                                        Member.fromMap(data);
+                                                  final Member member =
+                                                      Member.fromMap(data);
 
-                                                    return member.userId ==
-                                                            doc.id &&
-                                                        member.userId !=
-                                                            group.owner;
-                                                  });
+                                                  return StreamBuilder<
+                                                      DocumentSnapshot>(
+                                                    stream:
+                                                        FirebaseUtils.dbUser(
+                                                      member.userId!,
+                                                    ).snapshots(),
+                                                    builder:
+                                                        (context, snapshot) {
+                                                      if (!snapshot.hasData) {
+                                                        return const SizedBox();
+                                                      }
+                                                      // Object
+                                                      final User user =
+                                                          User.fromMap(snapshot
+                                                                  .data!
+                                                                  .data()
+                                                              as Map<String,
+                                                                  dynamic>);
 
-                                                  return (filter.isEmpty)
-                                                      ? const SizedBox()
-                                                      : Column(
-                                                          children: filter
-                                                              .map((data) {
-                                                            // Object
-                                                            final Member
-                                                                member =
-                                                                Member.fromMap(
-                                                                    data);
-
-                                                            return StreamBuilder<
-                                                                DocumentSnapshot>(
-                                                              stream: FirebaseUtils
-                                                                      .dbUser(member
-                                                                          .userId!)
-                                                                  .snapshots(),
-                                                              builder: (context,
-                                                                  snapshot) {
-                                                                if (!snapshot
-                                                                    .hasData) {
-                                                                  return const SizedBox();
-                                                                }
-                                                                // Object
-                                                                final User
-                                                                    user =
-                                                                    User.fromMap(snapshot
-                                                                            .data!
-                                                                            .data()
-                                                                        as Map<
-                                                                            String,
-                                                                            dynamic>);
-
-                                                                return Container(
-                                                                  color: ColorConfig
-                                                                      .colorPrimary,
-                                                                  child:
-                                                                      ListTile(
-                                                                    onTap: () {
-                                                                      // Navigate
-                                                                      RouteHandle
-                                                                          .toPersonalDetailPage(
-                                                                        context:
-                                                                            context,
-                                                                        userId: snapshot
-                                                                            .data!
-                                                                            .id,
-                                                                        yourId:
-                                                                            yourId,
-                                                                      );
-                                                                    },
-                                                                    leading:
-                                                                        BasicPhotoProfile(
-                                                                      size: 36,
-                                                                      url: user
-                                                                          .profile,
-                                                                      color: Colors
-                                                                          .white,
-                                                                    ),
-                                                                    title: Text(
-                                                                      (snapshot.data!.id ==
-                                                                              yourId)
-                                                                          ? "You"
-                                                                          : user
-                                                                              .name!,
-                                                                      style: FontConfig
-                                                                          .medium(
-                                                                        size:
-                                                                            14,
-                                                                        color: Colors
-                                                                            .white,
-                                                                      ),
-                                                                      maxLines:
-                                                                          1,
-                                                                      overflow:
-                                                                          TextOverflow
-                                                                              .ellipsis,
-                                                                    ),
-                                                                    trailing:
-                                                                        const Icon(
-                                                                      Icons
-                                                                          .arrow_forward_ios,
-                                                                      color: Colors
-                                                                          .white,
-                                                                    ),
-                                                                  ),
-                                                                );
-                                                              },
+                                                      return Container(
+                                                        color: ColorConfig
+                                                            .colorPrimary,
+                                                        child: ListTile(
+                                                          onTap: () {
+                                                            // Navigate
+                                                            RouteHandle
+                                                                .toPersonalDetailPage(
+                                                              context: context,
+                                                              userId: snapshot
+                                                                  .data!.id,
+                                                              yourId: yourId,
                                                             );
-                                                          }).toList(),
-                                                        );
+                                                          },
+                                                          leading:
+                                                              BasicPhotoProfile(
+                                                            size: 36,
+                                                            url: user.profile,
+                                                            color: Colors.white,
+                                                          ),
+                                                          title: Text(
+                                                            (snapshot.data!
+                                                                        .id ==
+                                                                    yourId)
+                                                                ? "You"
+                                                                : user.name!,
+                                                            style: FontConfig
+                                                                .medium(
+                                                              size: 14,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
+                                                            maxLines: 1,
+                                                            overflow:
+                                                                TextOverflow
+                                                                    .ellipsis,
+                                                          ),
+                                                          trailing: const Icon(
+                                                            Icons
+                                                                .arrow_forward_ios,
+                                                            color: Colors.white,
+                                                          ),
+                                                        ),
+                                                      );
+                                                    },
+                                                  );
                                                 }).toList(),
                                               ),
                                               (group.owner == yourId)
@@ -472,7 +456,7 @@ class GroupDetailPage extends StatelessWidget {
                                   },
                                 ),
                         ),
-                        const SizedBox(height: 24),
+                        SizedBox(height: (group.owner == yourId) ? 24 : 0),
                         // Delete
                         (group.owner == yourId)
                             ? Container(
@@ -501,7 +485,9 @@ class GroupDetailPage extends StatelessWidget {
                             ? Container(
                                 color: ColorConfig.colorPrimary,
                                 child: ListTile(
-                                  onTap: () {},
+                                  onTap: () {
+                                    unMember();
+                                  },
                                   leading: const Icon(Icons.exit_to_app,
                                       color: Colors.white),
                                   title: Text(
@@ -518,7 +504,9 @@ class GroupDetailPage extends StatelessWidget {
                             : Container(
                                 color: ColorConfig.colorPrimary,
                                 child: ListTile(
-                                  onTap: () {},
+                                  onTap: () {
+                                    addMember();
+                                  },
                                   title: Center(
                                     child: Text(
                                       "Join To Group",

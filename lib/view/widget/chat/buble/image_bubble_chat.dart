@@ -27,6 +27,7 @@ class ImageBubbleChat extends StatelessWidget {
         RouteHandle.toDetailImage(
           context: context,
           url: (personal != null) ? personal!.url! : group!.url!,
+          file: null,
         );
       },
       child: Padding(

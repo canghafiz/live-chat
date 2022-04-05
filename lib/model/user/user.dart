@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:live_chat/utils/export_utils.dart';
 
 class User {
@@ -68,6 +69,46 @@ class UserDbService {
   }) async {
     return await _dataManager.updatePhotoProfile(userId: userId, url: url);
   }
+
+  Future<bool> addContact({
+    required String yourId,
+    required String userId,
+  }) async {
+    return await _dataManager.addContact(yourId: yourId, userId: userId);
+  }
+
+  Future<bool> deleteContact({
+    required String yourId,
+    required String userId,
+  }) async {
+    return await _dataManager.deleteContact(yourId: yourId, userId: userId);
+  }
+
+  Future<bool> updateBlock({
+    required String yourId,
+    required String userId,
+    required bool value,
+  }) async {
+    return await _dataManager.updateBlock(
+      yourId: yourId,
+      userId: userId,
+      value: value,
+    );
+  }
+
+  Future<bool> joinGroup({
+    required String yourId,
+    required String groupId,
+  }) async {
+    return await _dataManager.joinGroup(yourId: yourId, groupId: groupId);
+  }
+
+  Future<bool> outGroup({
+    required String yourId,
+    required String groupId,
+  }) async {
+    return await _dataManager.outGroup(yourId: yourId, groupId: groupId);
+  }
 }
 
 abstract class UserDataManager {
@@ -79,6 +120,32 @@ abstract class UserDataManager {
   FutureOr<bool> updateName({
     required String userId,
     required String name,
+  });
+
+  FutureOr<bool> addContact({
+    required String yourId,
+    required String userId,
+  });
+
+  FutureOr<bool> deleteContact({
+    required String yourId,
+    required String userId,
+  });
+
+  FutureOr<bool> updateBlock({
+    required String yourId,
+    required String userId,
+    required bool value,
+  });
+
+  FutureOr<bool> joinGroup({
+    required String yourId,
+    required String groupId,
+  });
+
+  FutureOr<bool> outGroup({
+    required String yourId,
+    required String groupId,
   });
 }
 
@@ -121,6 +188,117 @@ class UserFirebaseDb implements UserDataManager {
         .then((_) => true)
         .catchError((e) {
           log("Update photo profile error on $e");
+          return false;
+        });
+  }
+
+  @override
+  Future<bool> addContact({
+    required String yourId,
+    required String userId,
+  }) async {
+    return await FirebaseUtils.dbUser(yourId)
+        .update({
+          "contacts": FieldValue.arrayUnion([
+            {
+              "block": false,
+              "user_id": userId,
+            }
+          ]),
+        })
+        .then((_) => true)
+        .catchError((e) {
+          log("Update contact error on $e");
+          return false;
+        });
+  }
+
+  @override
+  Future<bool> deleteContact({
+    required String yourId,
+    required String userId,
+  }) async {
+    return FirebaseUtils.dbUser(yourId).get().then(
+      (doc) async {
+        // Object
+        final User user = User.fromMap(doc.data() as Map<String, dynamic>);
+
+        final int index =
+            user.contacts!.indexWhere((data) => data['user_id'] == userId);
+
+        return FirebaseUtils.dbUser(yourId)
+            .update(
+              {
+                "contacts": FieldValue.arrayRemove(
+                  [user.contacts![index]],
+                ),
+              },
+            )
+            .then((_) => true)
+            .catchError(
+              (e) {
+                log("Update contact error on $e");
+                return false;
+              },
+            );
+      },
+    );
+  }
+
+  @override
+  Future<bool> updateBlock({
+    required String yourId,
+    required String userId,
+    required bool value,
+  }) async {
+    deleteContact(yourId: yourId, userId: userId);
+
+    return FirebaseUtils.dbUser(yourId)
+        .update(
+          {
+            "contacts": FieldValue.arrayUnion([
+              {
+                "block": value,
+                "user_id": userId,
+              },
+            ]),
+          },
+        )
+        .then((_) => true)
+        .catchError(
+          (e) {
+            log("Update contact error on $e");
+            return false;
+          },
+        );
+  }
+
+  @override
+  Future<bool> joinGroup({
+    required String yourId,
+    required String groupId,
+  }) async {
+    return await FirebaseUtils.dbUser(yourId)
+        .update({
+          "groups": FieldValue.arrayUnion([groupId]),
+        })
+        .then((_) => true)
+        .catchError((e) {
+          log("Update groups error on $e");
+          return false;
+        });
+  }
+
+  @override
+  Future<bool> outGroup(
+      {required String yourId, required String groupId}) async {
+    return await FirebaseUtils.dbUser(yourId)
+        .update({
+          "groups": FieldValue.arrayRemove([groupId]),
+        })
+        .then((_) => true)
+        .catchError((e) {
+          log("Update groups error on $e");
           return false;
         });
   }

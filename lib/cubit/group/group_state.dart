@@ -1,10 +1,8 @@
 part of 'group_cubit.dart';
 
-class GroupState  {
+class GroupState {
   List<String> usersId;
+  File? imageFile;
 
-  GroupState(this.usersId);
-
-
-
+  GroupState({required this.usersId, required this.imageFile});
 }

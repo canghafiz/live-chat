@@ -96,7 +96,7 @@ class ProfilePage extends StatelessWidget {
                                     imageNotNull: user.profile != null,
                                     delete: () {
                                       // Update Storage
-                                      FirebaseStorageService.deleteImage(
+                                      FirebaseStorageService.delete(
                                         user.profile!,
                                       ).then(
                                         (_) {

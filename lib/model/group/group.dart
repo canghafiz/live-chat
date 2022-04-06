@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:live_chat/utils/export_utils.dart';
@@ -17,6 +18,21 @@ class Group {
   List? members;
 
   // Map
+  Map<String, dynamic> toMap({
+    required List members,
+    required String name,
+    required String owner,
+    required String? profile,
+  }) {
+    return {
+      "chat_date": null,
+      "members": members,
+      "name": name,
+      "owner": owner,
+      "profile": profile,
+    };
+  }
+
   factory Group.fromMap(Map<String, dynamic> data) {
     return Group(
       chatDate: data['chat_date'],
@@ -31,6 +47,11 @@ class Group {
   static final GroupDbService _dbService = GroupDbService();
 
   static GroupDbService get dbService => _dbService;
+
+  // Storage
+  static const String _profileUrl = "Profile/Groups/";
+
+  static String get profileUrl => _profileUrl;
 }
 
 // Low Level
@@ -45,6 +66,20 @@ class GroupDbService {
 
   // Process
   final GroupDataManager _dataManager;
+
+  Future<bool> createGroup({
+    required List members,
+    required String name,
+    required String yourId,
+    required String? profile,
+  }) async {
+    return _dataManager.createGroup(
+      members: members,
+      name: name,
+      yourId: yourId,
+      profile: profile,
+    );
+  }
 
   Future<void> addMember({
     required String groupId,
@@ -62,6 +97,12 @@ class GroupDbService {
 }
 
 abstract class GroupDataManager {
+  FutureOr<bool> createGroup({
+    required List members,
+    required String name,
+    required String yourId,
+    required String? profile,
+  });
   FutureOr<void> addMember({required String groupId, required String userId});
   FutureOr<void> deleteMember({
     required String groupId,
@@ -80,7 +121,38 @@ class GroupFirebaseDb implements GroupDataManager {
   }
 
   // Process
+  final Group _group = Group();
   final Member _member = Member();
+
+  @override
+  Future<bool> createGroup({
+    required List members,
+    required String name,
+    required String yourId,
+    required String? profile,
+  }) async {
+    List temp = [];
+    for (String id in members) {
+      Map<String, dynamic> member = _member.toMap(id);
+      temp.add(member);
+    }
+    return await FirebaseUtils.dbGroups()
+        .add(
+          _group.toMap(
+            members: temp,
+            name: name,
+            owner: yourId,
+            profile: profile,
+          ),
+        )
+        .then((_) => true)
+        .catchError(
+      (e) {
+        log("Create group error on $e");
+        return false;
+      },
+    );
+  }
 
   @override
   Future<void> addMember({

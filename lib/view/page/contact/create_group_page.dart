@@ -1,10 +1,15 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:live_chat/cubit/export_cubit.dart';
+import 'package:live_chat/model/export_model.dart';
+import 'package:live_chat/service/export_service.dart';
 import 'package:live_chat/utils/export_utils.dart';
 import 'package:live_chat/view/export_view.dart';
+import 'package:path/path.dart';
 
 class CreateGroupPage extends StatefulWidget {
   const CreateGroupPage({
@@ -20,6 +25,107 @@ class CreateGroupPage extends StatefulWidget {
 class _CreateGroupPageState extends State<CreateGroupPage> {
   final formKey = GlobalKey<FormState>();
 
+  void findGroup() {
+    FirebaseUtils.dbUser(widget.yourId).get().then(
+      (doc) {
+        // Object
+        final User user = User.fromMap(doc.data() as Map<String, dynamic>);
+
+        // Group
+        FirebaseUtils.dbGroups().get().then(
+          (query) {
+            for (DocumentSnapshot doc in query.docs) {
+              // Object
+              final Group group =
+                  Group.fromMap(doc.data() as Map<String, dynamic>);
+
+              if (!user.groups!.contains(doc.id)) {
+                for (Map<String, dynamic> data in group.members!) {
+                  // Object
+                  final Member member = Member.fromMap(data);
+
+                  if (member.userId! == widget.yourId) {
+                    // Update User Db
+                    User.dbService.joinGroup(
+                      yourId: widget.yourId,
+                      groupId: doc.id,
+                    );
+                  }
+
+                  // Update User Db
+                  User.dbService.joinGroup(
+                    yourId: member.userId!,
+                    groupId: doc.id,
+                  );
+                }
+              }
+            }
+          },
+        );
+      },
+    );
+  }
+
+  void create({
+    required BuildContext context,
+    required List members,
+    required File? file,
+  }) {
+    // Temp
+    List tempMembers = members;
+    tempMembers.add(widget.yourId);
+
+    if (file != null) {
+      // Update Firebase Storage
+      FirebaseStorageService.uploadImage(
+        folderName: Group.profileUrl,
+        fileName: basename(file.path),
+        pickedFile: XFile(file.path),
+      ).then(
+        (url) {
+          // Update Group Db
+          Group.dbService
+              .createGroup(
+            members: tempMembers,
+            name: controller.text,
+            yourId: widget.yourId,
+            profile: url,
+          )
+              .then(
+            (success) {
+              if (success) {
+                // Check Group & Update User Db
+                findGroup();
+
+                Navigator.pop(context);
+              }
+            },
+          );
+        },
+      );
+      return;
+    }
+
+    // Update Group Db
+    Group.dbService
+        .createGroup(
+      members: members,
+      name: controller.text,
+      yourId: widget.yourId,
+      profile: null,
+    )
+        .then(
+      (success) {
+        if (success) {
+          // Check Group & Update User Db
+          findGroup();
+
+          Navigator.pop(context);
+        }
+      },
+    );
+  }
+
   // Controller
   final controller = TextEditingController();
 
@@ -33,13 +139,23 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
   Widget build(BuildContext context) {
     // Update State
     GroupCubitHandle.read(context).updateImage(null);
+
     return BlocSelector<ThemeCubit, ThemeState, bool>(
       selector: (state) => state.isDark,
       builder: (context, isDark) => Scaffold(
         backgroundColor: ColorConfig.colorPrimary,
         extendBody: true,
         floatingActionButton: FloatingActionButton(
-          onPressed: () {},
+          onPressed: () {
+            if (formKey.currentState!.validate()) {
+              // Call Logic & Update Db
+              create(
+                context: context,
+                members: GroupCubitHandle.read(context).state.usersId,
+                file: GroupCubitHandle.read(context).state.imageFile,
+              );
+            }
+          },
           child: const Icon(Icons.arrow_forward, color: Colors.white),
           backgroundColor: ColorConfig.colorPrimary,
         ),

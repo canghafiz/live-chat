@@ -376,6 +376,26 @@ class GroupDetailPage extends StatelessWidget {
                                                             .colorPrimary,
                                                         child: ListTile(
                                                           onTap: () {
+                                                            if (snapshot
+                                                                    .data!.id ==
+                                                                yourId) {
+                                                              // Navigate
+                                                              RouteHandle
+                                                                  .toMainPage(
+                                                                context:
+                                                                    context,
+                                                                userId: yourId,
+                                                              );
+
+                                                              // Update State
+                                                              NavigationCubitHandle
+                                                                      .read(
+                                                                          context)
+                                                                  .setNavigation(
+                                                                      3);
+
+                                                              return;
+                                                            }
                                                             // Navigate
                                                             RouteHandle
                                                                 .toPersonalDetailPage(

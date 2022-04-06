@@ -163,7 +163,7 @@ class ContactPage extends StatelessWidget {
                                 final User your = User.fromMap(snapshot.data!
                                     .data() as Map<String, dynamic>);
 
-                                return (your.contacts!.isEmpty)
+                                return (your.groups!.isEmpty)
                                     ? const SizedBox()
                                     : ListView.builder(
                                         itemCount:
@@ -175,6 +175,20 @@ class ContactPage extends StatelessWidget {
                                           var filter = your.groups!.where(
                                             (data) => data == id,
                                           );
+
+                                          if (your.groups!.length >
+                                              snapshotGroups
+                                                  .data!.docs.length) {
+                                            final int index = your.groups!
+                                                .indexWhere(
+                                                    (data) => data != id);
+
+                                            // Update User Db
+                                            User.dbService.outGroup(
+                                              yourId: userId,
+                                              groupId: your.groups![index],
+                                            );
+                                          }
 
                                           return Column(
                                             children: filter.map(

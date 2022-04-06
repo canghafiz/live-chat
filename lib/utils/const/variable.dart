@@ -1,3 +1,5 @@
+import 'package:live_chat/model/export_model.dart';
+
 enum BackEndStatus { undoing, doing, success, error }
 
 enum CallType { receiver, caller }
@@ -13,4 +15,5 @@ class VariableConst {
   static const chatTypeImage = 'Image';
   static const callTypeVoice = 'Voice';
   static const callTypeVideo = 'Video';
+  static final PersonalChatService personalDbService = PersonalChatService();
 }

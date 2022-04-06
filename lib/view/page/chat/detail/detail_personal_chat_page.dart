@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:live_chat/cubit/export_cubit.dart';
 import 'package:live_chat/model/export_model.dart';
@@ -249,6 +250,28 @@ class DetailPersonalChatPage extends StatelessWidget {
                                                                             (data['type'] == VariableConst.chatTypeAudio)
                                                                                 ? PersonalChatAudio.fromMap(data)
                                                                                 : null;
+
+                                                                        SchedulerBinding
+                                                                            .instance!
+                                                                            .addPostFrameCallback(
+                                                                          (_) {
+                                                                            if (!data['read']) {
+                                                                              // Update Chat Db
+                                                                              VariableConst.personalDbService.updateReadChat(
+                                                                                yourId: yourId,
+                                                                                date: date,
+                                                                                userId: userId,
+                                                                                chatId: doc.id,
+                                                                              );
+                                                                              VariableConst.personalDbService.updateReadChat(
+                                                                                yourId: userId,
+                                                                                date: date,
+                                                                                userId: yourId,
+                                                                                chatId: doc.id,
+                                                                              );
+                                                                            }
+                                                                          },
+                                                                        );
 
                                                                         return (text !=
                                                                                 null)

@@ -1,15 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:live_chat/cubit/export_cubit.dart';
+import 'package:live_chat/model/export_model.dart';
 import 'package:live_chat/utils/export_utils.dart';
 import 'package:live_chat/view/export_view.dart';
 
-class MainPage extends StatelessWidget {
-  const MainPage({
-    Key? key,
-    required this.userId,
-  }) : super(key: key);
+class MainPage extends StatefulWidget {
+  const MainPage({Key? key, required this.userId}) : super(key: key);
   final String userId;
+
+  @override
+  State<MainPage> createState() => _MainPageState();
+}
+
+class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    // Update User Db
+    User.dbService.updateOnlineStatus(userId: widget.userId, value: true);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    // Update User Db
+    User.dbService.updateOnlineStatus(userId: widget.userId, value: false);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.inactive) {
+      // Update User Db
+      User.dbService.updateOnlineStatus(userId: widget.userId, value: false);
+    }
+    if (state == AppLifecycleState.resumed) {
+      // Update User Db
+      User.dbService.updateOnlineStatus(userId: widget.userId, value: true);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,12 +47,11 @@ class MainPage extends StatelessWidget {
 
     // Pages
     final pages = <Widget>[
-      ChatPage(userId: userId),
-      CallPage(userId: userId),
-      ContactPage(userId: userId),
-      ProfilePage(userId: userId),
+      ChatPage(userId: widget.userId),
+      CallPage(userId: widget.userId),
+      ContactPage(userId: widget.userId),
+      ProfilePage(userId: widget.userId),
     ];
-
     return BlocSelector<ThemeCubit, ThemeState, bool>(
       selector: (state) => state.isDark,
       builder: (context, isDark) =>

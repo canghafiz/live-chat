@@ -109,9 +109,21 @@ class UserDbService {
   }) async {
     return await _dataManager.outGroup(yourId: yourId, groupId: groupId);
   }
+
+  Future<void> updateOnlineStatus({
+    required String userId,
+    required bool value,
+  }) async {
+    _dataManager.updateOnlineStatus(userId: userId, value: value);
+  }
 }
 
 abstract class UserDataManager {
+  FutureOr<void> updateOnlineStatus({
+    required String userId,
+    required bool value,
+  });
+
   FutureOr<bool> updatePhotoProfile({
     required String userId,
     required String? url,
@@ -301,5 +313,13 @@ class UserFirebaseDb implements UserDataManager {
           log("Update groups error on $e");
           return false;
         });
+  }
+
+  @override
+  Future<void> updateOnlineStatus({
+    required String userId,
+    required bool value,
+  }) async {
+    await FirebaseUtils.dbUser(userId).update({"online": value});
   }
 }

@@ -94,6 +94,24 @@ class GroupDbService {
   }) async {
     _dataManager.deleteMember(groupId: groupId, userId: userId);
   }
+
+  Future<void> updateProfile({
+    required String groupId,
+    required String? url,
+  }) async {
+    _dataManager.updateProfile(groupId: groupId, url: url);
+  }
+
+  Future<void> updateName({
+    required String groupId,
+    required String name,
+  }) async {
+    _dataManager.updateName(groupId: groupId, name: name);
+  }
+
+  Future<void> deleteGroup(String groupId) async {
+    _dataManager.deleteGroup(groupId);
+  }
 }
 
 abstract class GroupDataManager {
@@ -108,6 +126,9 @@ abstract class GroupDataManager {
     required String groupId,
     required String userId,
   });
+  FutureOr<void> updateProfile({required String groupId, required String? url});
+  FutureOr<void> updateName({required String groupId, required String name});
+  FutureOr<void> deleteGroup(String groupId);
 }
 
 // Firebase
@@ -180,5 +201,26 @@ class GroupFirebaseDb implements GroupDataManager {
         "members": FieldValue.arrayRemove([group.members![index]]),
       });
     });
+  }
+
+  @override
+  Future<void> updateProfile({
+    required String groupId,
+    required String? url,
+  }) async {
+    await FirebaseUtils.dbGroup(groupId).update({"profile": url});
+  }
+
+  @override
+  Future<void> updateName({
+    required String groupId,
+    required String name,
+  }) async {
+    await FirebaseUtils.dbGroup(groupId).update({"name": name});
+  }
+
+  @override
+  Future<void> deleteGroup(String groupId) async {
+    await FirebaseUtils.dbGroup(groupId).delete();
   }
 }

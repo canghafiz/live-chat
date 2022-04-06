@@ -110,6 +110,37 @@ class ProfilePage extends StatelessWidget {
                                       );
                                     },
                                     dbUpdate: (value) {
+                                      if (user.profile != null) {
+                                        // Update Storage
+                                      FirebaseStorageService.delete(
+                                        user.profile!,
+                                      ).then(
+                                        (_) {
+                                          Navigator.pop(context);
+                                          // Update Db
+                                          User.dbService.updatePhotoProfile(
+                                            userId: userId,
+                                            url: null,
+                                          );
+
+                                          // Update Storage
+                                      FirebaseStorageService.uploadImage(
+                                        folderName: User.profileUrl,
+                                        fileName: userId,
+                                        pickedFile: XFile(value.path),
+                                      ).then(
+                                        (url) {
+                                          // Update Db
+                                          User.dbService.updatePhotoProfile(
+                                            userId: userId,
+                                            url: url,
+                                          );
+                                        },
+                                      );
+                                        },
+                                      );
+                                        return;
+                                      }
                                       // Update Storage
                                       FirebaseStorageService.uploadImage(
                                         folderName: User.profileUrl,

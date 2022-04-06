@@ -16,13 +16,33 @@ class AddMemberPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Update State
     return BlocSelector<ThemeCubit, ThemeState, bool>(
       selector: (state) => state.isDark,
       builder: (context, isDark) => Scaffold(
         backgroundColor: ColorConfig.colorPrimary,
         extendBody: true,
         floatingActionButton: FloatingActionButton(
-          onPressed: () {},
+          onPressed: () {
+            if (GroupCubitHandle.read(context).state.usersId.isNotEmpty) {
+              for (String id in GroupCubitHandle.read(context).state.usersId) {
+                // Update Group Db
+                Group.dbService.addMember(groupId: groupId, userId: id);
+
+                // Update User Db
+                User.dbService.joinGroup(yourId: id, groupId: groupId);
+              }
+
+              Navigator.pop(context);
+            }
+
+            // Show Snackbar
+            showCustomSnackbar(
+              context: context,
+              text: "Please add some new users!",
+              color: Colors.red,
+            );
+          },
           child: const Icon(Icons.arrow_forward, color: Colors.white),
           backgroundColor: ColorConfig.colorPrimary,
         ),

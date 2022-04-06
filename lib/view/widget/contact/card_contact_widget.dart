@@ -68,38 +68,46 @@ class CardContactWidget extends StatelessWidget {
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const SizedBox();
-                }
-                // Object
-                final Group group = Group.fromMap(
-                    snapshot.data!.data() as Map<String, dynamic>);
+                } else {
+                  if (snapshot.data != null) {
+                    // Object
+                    final Group group = Group.fromMap(
+                        snapshot.data!.data() as Map<String, dynamic>);
 
-                return ListTile(
-                  onTap: () {
-                    // Navigate
-                    RouteHandle.toGroupDetailPage(
-                      context: context,
-                      groupId: groupId!,
-                      yourId: yourId,
+                    return ListTile(
+                      onTap: () {
+                        // Navigate
+                        RouteHandle.toGroupDetailPage(
+                          context: context,
+                          groupId: groupId!,
+                          yourId: yourId,
+                        );
+                      },
+                      leading: SizedBox(
+                        width: 36,
+                        child: BasicPhotoProfile(size: 36, url: group.profile),
+                      ),
+                      title: Text(
+                        group.name!,
+                        style: FontConfig.medium(
+                          size: 14,
+                          color:
+                              (isDark) ? Colors.white : ColorConfig.colorDark,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      trailing: const Icon(
+                        Icons.arrow_forward_ios_sharp,
+                        color: ColorConfig.colorPrimary,
+                      ),
                     );
-                  },
-                  leading: SizedBox(
-                    width: 36,
-                    child: BasicPhotoProfile(size: 36, url: group.profile),
-                  ),
-                  title: Text(
-                    group.name!,
-                    style: FontConfig.medium(
-                      size: 14,
-                      color: (isDark) ? Colors.white : ColorConfig.colorDark,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  trailing: const Icon(
-                    Icons.arrow_forward_ios_sharp,
-                    color: ColorConfig.colorPrimary,
-                  ),
-                );
+                  } else {
+                    // Update User Db
+                    User.dbService.outGroup(yourId: yourId, groupId: groupId!);
+                    return const SizedBox();
+                  }
+                }
               },
             ),
     );

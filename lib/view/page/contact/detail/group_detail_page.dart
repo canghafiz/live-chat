@@ -1,10 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:live_chat/cubit/export_cubit.dart';
 import 'package:live_chat/model/export_model.dart';
+import 'package:live_chat/service/export_service.dart';
 import 'package:live_chat/utils/export_utils.dart';
 import 'package:live_chat/view/export_view.dart';
+import 'package:path/path.dart';
 
 class GroupDetailPage extends StatelessWidget {
   const GroupDetailPage({
@@ -139,8 +142,81 @@ class GroupDetailPage extends StatelessWidget {
                                               content: PhotoBottomWidget(
                                                 imageNotNull:
                                                     group.profile != null,
-                                                delete: () {},
-                                                dbUpdate: (value) {},
+                                                delete: () {
+                                                  // Update Storage
+                                                  FirebaseStorageService.delete(
+                                                          group.profile!)
+                                                      .then(
+                                                    (_) {
+                                                      // Update Group Db
+                                                      Group.dbService
+                                                          .updateProfile(
+                                                        groupId: groupId,
+                                                        url: null,
+                                                      );
+                                                    },
+                                                  );
+
+                                                  Navigator.pop(context);
+                                                },
+                                                dbUpdate: (value) {
+                                                  if (group.profile != null) {
+                                                    // Update Storage
+                                                    FirebaseStorageService
+                                                            .delete(
+                                                                group.profile!)
+                                                        .then(
+                                                      (_) {
+                                                        // Update Group Db
+                                                        Group.dbService
+                                                            .updateProfile(
+                                                          groupId: groupId,
+                                                          url: null,
+                                                        );
+
+                                                        // Update Storage
+                                                        FirebaseStorageService.uploadImage(
+                                                                folderName: Group
+                                                                    .profileUrl,
+                                                                fileName:
+                                                                    basename(value
+                                                                        .path),
+                                                                pickedFile:
+                                                                    XFile(value
+                                                                        .path))
+                                                            .then(
+                                                          (url) => Group
+                                                              .dbService
+                                                              .updateProfile(
+                                                            groupId: groupId,
+                                                            url: url,
+                                                          ),
+                                                        );
+                                                      },
+                                                    );
+                                                    return;
+                                                  }
+
+                                                  // Update Storage
+                                                  FirebaseStorageService
+                                                          .uploadImage(
+                                                              folderName: Group
+                                                                  .profileUrl,
+                                                              fileName:
+                                                                  basename(value
+                                                                      .path),
+                                                              pickedFile: XFile(
+                                                                  value.path))
+                                                      .then(
+                                                    (url) => Group.dbService
+                                                        .updateProfile(
+                                                      groupId: groupId,
+                                                      url: url,
+                                                    ),
+                                                  );
+
+                                                  Navigator.pop(context);
+                                                },
                                               ),
                                             );
                                           },
@@ -191,7 +267,15 @@ class GroupDetailPage extends StatelessWidget {
                                         inputType: null,
                                         intialValue: group.name!,
                                         title: "Name",
-                                        onSubmit: (value) {},
+                                        onSubmit: (value) {
+                                          // Update Group Db
+                                          Group.dbService.updateName(
+                                            groupId: groupId,
+                                            name: value,
+                                          );
+
+                                          Navigator.pop(context);
+                                        },
                                       ),
                                     );
                                   },
@@ -482,7 +566,23 @@ class GroupDetailPage extends StatelessWidget {
                             ? Container(
                                 color: ColorConfig.colorPrimary,
                                 child: ListTile(
-                                  onTap: () {},
+                                  onTap: () {
+                                    if (group.profile != null) {
+                                      // Update Storage
+                                      FirebaseStorageService.delete(
+                                              group.profile!)
+                                          .then(
+                                        (_) => Group.dbService
+                                            .deleteGroup(groupId),
+                                      );
+                                      Navigator.pop(context);
+                                      return;
+                                    }
+
+                                    // Update Group Db
+                                    Group.dbService.deleteGroup(groupId);
+                                    Navigator.pop(context);
+                                  },
                                   leading: const Icon(Icons.delete,
                                       color: Colors.white),
                                   title: Text(

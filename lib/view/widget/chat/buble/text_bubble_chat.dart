@@ -67,6 +67,7 @@ class TextBubbleChat extends StatelessWidget {
                         ),
                       ),
                       child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Flexible(
                             child: Linkify(
@@ -196,6 +197,7 @@ class TextBubbleChat extends StatelessWidget {
                                   },
                                 ),
                           Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Flexible(
                                 child: Text(

@@ -176,18 +176,9 @@ class ContactPage extends StatelessWidget {
                                             (data) => data == id,
                                           );
 
-                                          if (your.groups!.length >
-                                              snapshotGroups
-                                                  .data!.docs.length) {
-                                            final int index = your.groups!
-                                                .indexWhere(
-                                                    (data) => data != id);
-
+                                          if (your.groups!.isNotEmpty) {
                                             // Update User Db
-                                            User.dbService.outGroup(
-                                              yourId: userId,
-                                              groupId: your.groups![index],
-                                            );
+                                            User.dbService.deleteGroup(userId);
                                           }
 
                                           return Column(

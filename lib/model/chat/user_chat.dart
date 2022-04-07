@@ -14,7 +14,7 @@ class UserChat {
     return UserChat(
       chats: data['chats'],
       date: data['date'],
-      totalUnread: data['total_unread'] as int,
+      totalUnread: data['total_unread'],
     );
   }
 }

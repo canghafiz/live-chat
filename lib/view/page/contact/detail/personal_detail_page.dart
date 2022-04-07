@@ -164,8 +164,8 @@ class PersonalDetailPage extends StatelessWidget {
                                   stream: FirebaseUtils.dbGroups()
                                       .orderBy("name")
                                       .snapshots(),
-                                  builder: (context, snapshot) {
-                                    if (!snapshot.hasData) {
+                                  builder: (context, snapshotGroups) {
+                                    if (!snapshotGroups.hasData) {
                                       return const Center(
                                         child: SizedBox(
                                           width: 36,
@@ -174,7 +174,7 @@ class PersonalDetailPage extends StatelessWidget {
                                         ),
                                       );
                                     }
-                                    return (snapshot.data!.docs.isEmpty)
+                                    return (snapshotGroups.data!.docs.isEmpty)
                                         ? const SizedBox()
                                         : Column(
                                             crossAxisAlignment:
@@ -200,26 +200,34 @@ class PersonalDetailPage extends StatelessWidget {
                                               ),
                                               Column(
                                                 children: List.generate(
-                                                    user.groups!.length,
-                                                    (index) {
-                                                  final String id =
-                                                      user.groups![index];
+                                                  user.groups!.length,
+                                                  (index) {
+                                                    final String id =
+                                                        user.groups![index];
 
-                                                  var filter = you.groups!
-                                                      .where(
-                                                          (data) => data == id);
+                                                    var filter = you.groups!
+                                                        .where((data) =>
+                                                            data == id);
 
-                                                  return Column(
-                                                    children: filter
-                                                        .map(
-                                                          (id) =>
-                                                              CardSameGroupWidget(
-                                                            groupId: id,
-                                                          ),
-                                                        )
-                                                        .toList(),
-                                                  );
-                                                }),
+                                                    if (user
+                                                        .groups!.isNotEmpty) {
+                                                      // Update User Db
+                                                      User.dbService
+                                                          .deleteGroup(userId);
+                                                    }
+
+                                                    return Column(
+                                                      children: filter
+                                                          .map(
+                                                            (id) =>
+                                                                CardSameGroupWidget(
+                                                              groupId: id,
+                                                            ),
+                                                          )
+                                                          .toList(),
+                                                    );
+                                                  },
+                                                ),
                                               ),
                                             ],
                                           );

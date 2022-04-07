@@ -56,6 +56,26 @@ class UserDbService {
   // Process
   final UserDataManager _dataManager;
 
+  void deleteGroup(String userId) {
+    FirebaseUtils.dbUser(userId).get().then(
+      (doc) {
+        // Object
+        final User user = User.fromMap(doc.data() as Map<String, dynamic>);
+
+        for (String id in user.groups!) {
+          FirebaseUtils.dbGroup(id).get().then(
+            (doc) {
+              if (!doc.exists) {
+                // Update User Db
+                outGroup(yourId: userId, groupId: id);
+              }
+            },
+          );
+        }
+      },
+    );
+  }
+
   Future<bool> updateName({
     required String userId,
     required String name,

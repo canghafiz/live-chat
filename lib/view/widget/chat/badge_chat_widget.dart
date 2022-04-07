@@ -41,17 +41,19 @@ class BadgeChatWidget extends StatelessWidget {
               ),
             ),
             // Total Unread
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 5),
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(10)),
-                color: ColorConfig.colorPrimary,
-              ),
-              child: Text(
-                "${chat.totalUnread}",
-                style: FontConfig.light(size: 8, color: Colors.white),
-              ),
-            ),
+            (chat.totalUnread! > 0)
+                ? Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    decoration: const BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                      color: ColorConfig.colorPrimary,
+                    ),
+                    child: Text(
+                      "${chat.totalUnread}",
+                      style: FontConfig.light(size: 8, color: Colors.white),
+                    ),
+                  )
+                : const SizedBox(),
           ],
         );
       },

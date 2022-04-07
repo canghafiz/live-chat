@@ -2,12 +2,14 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:live_chat/cubit/export_cubit.dart';
 import 'package:live_chat/model/export_model.dart';
 import 'package:live_chat/service/export_service.dart';
 import 'package:live_chat/utils/export_utils.dart';
 import 'package:live_chat/view/export_view.dart';
 import 'package:provider/provider.dart';
+import 'package:path/path.dart';
 
 class TextfieldChatWidget extends StatefulWidget {
   const TextfieldChatWidget({
@@ -37,10 +39,10 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
     // Controller
     controller.addListener(() {
       if (controller.text.isNotEmpty) {
-        ChatCubitHandle.read(context).setTextfield(false);
+        ChatCubitHandle.read(this.context).setTextfield(false);
         return;
       }
-      ChatCubitHandle.read(context).setTextfield(true);
+      ChatCubitHandle.read(this.context).setTextfield(true);
     });
   }
 
@@ -120,7 +122,62 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                       ? Row(
                           children: [
                             GestureDetector(
-                              onTap: () {},
+                              onTap: () {
+                                // Show Modal Bottom
+                                FunctionUtils.showCustomBottomSheet(
+                                  context: context,
+                                  content: PhotoBottomWidget(
+                                    dbUpdate: (value) {
+                                      // For Personal
+                                      if (widget.userId != null) {
+                                        //  Update Storage
+                                        FirebaseStorageService.uploadImage(
+                                          folderName:
+                                              VariableConst.imageChatStorage,
+                                          fileName: basename(value.path),
+                                          pickedFile: XFile(value.path),
+                                        ).then(
+                                          (url) {
+                                            // Update Chat Db
+                                            VariableConst.personalDbService
+                                                .sendChat(
+                                              sendChat: () {
+                                                // For You
+                                                VariableConst.personalDbService
+                                                    .sendImage(
+                                                  yourId: widget.yourId,
+                                                  userId: widget.userId!,
+                                                  date: VariableConst
+                                                      .timeYearMonthDay,
+                                                  url: url,
+                                                  from: widget.yourId,
+                                                );
+
+                                                // For User
+                                                VariableConst.personalDbService
+                                                    .sendImage(
+                                                  yourId: widget.userId!,
+                                                  userId: widget.yourId,
+                                                  date: VariableConst
+                                                      .timeYearMonthDay,
+                                                  url: url,
+                                                  from: widget.yourId,
+                                                );
+
+                                                Navigator.pop(context);
+                                              },
+                                              yourId: widget.yourId,
+                                              userId: widget.userId!,
+                                            );
+                                          },
+                                        );
+                                      }
+                                    },
+                                    imageNotNull: false,
+                                    delete: () {},
+                                  ),
+                                );
+                              },
                               child: const Icon(
                                 Icons.photo,
                                 color: ColorConfig.colorDark,
@@ -167,7 +224,43 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                 : circularButton(
                                     size: 40,
                                     icon: Icons.send,
-                                    onTap: () {},
+                                    onTap: () {
+                                      if (controller.text.isNotEmpty) {
+                                        // For Personal
+                                        if (widget.userId != null) {
+                                          VariableConst.personalDbService
+                                              .sendChat(
+                                            sendChat: () {
+                                              // For You
+                                              VariableConst.personalDbService
+                                                  .sendText(
+                                                yourId: widget.yourId,
+                                                userId: widget.userId!,
+                                                from: widget.yourId,
+                                                date: VariableConst
+                                                    .timeYearMonthDay,
+                                                message: controller.text,
+                                              );
+
+                                              // For User
+                                              VariableConst.personalDbService
+                                                  .sendText(
+                                                yourId: widget.userId!,
+                                                userId: widget.yourId,
+                                                from: widget.yourId,
+                                                date: VariableConst
+                                                    .timeYearMonthDay,
+                                                message: controller.text,
+                                              );
+                                            },
+                                            yourId: widget.yourId,
+                                            userId: widget.userId!,
+                                          );
+                                          controller.clear();
+                                          return;
+                                        }
+                                      }
+                                    },
                                   ),
                           ],
                         )
@@ -280,7 +373,65 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                 : circularButton(
                                     size: 40,
                                     icon: Icons.send,
-                                    onTap: () {},
+                                    onTap: () {
+                                      FunctionUtils.recorderFilePath().then(
+                                        (path) {
+                                          if (File(path).existsSync()) {
+                                            // For Personal
+                                            if (widget.userId != null) {
+                                              //  Update Storage
+                                              FirebaseStorageService
+                                                  .uploadAudio(
+                                                folderName: VariableConst
+                                                    .imageChatStorage,
+                                                fileName: basename(path),
+                                                file: File(path),
+                                              ).then(
+                                                (url) {
+                                                  // Update Chat Db
+                                                  VariableConst
+                                                      .personalDbService
+                                                      .sendChat(
+                                                    sendChat: () {
+                                                      // For You
+                                                      VariableConst
+                                                          .personalDbService
+                                                          .sendAudio(
+                                                        yourId: widget.yourId,
+                                                        userId: widget.userId!,
+                                                        date: VariableConst
+                                                            .timeYearMonthDay,
+                                                        url: url,
+                                                        from: widget.yourId,
+                                                      );
+
+                                                      // For User
+                                                      VariableConst
+                                                          .personalDbService
+                                                          .sendAudio(
+                                                        yourId: widget.userId!,
+                                                        userId: widget.yourId,
+                                                        date: VariableConst
+                                                            .timeYearMonthDay,
+                                                        url: url,
+                                                        from: widget.yourId,
+                                                      );
+
+                                                      // Update State
+                                                      ChatCubitHandle.read(
+                                                              context)
+                                                          .setTextfield(true);
+                                                    },
+                                                    yourId: widget.yourId,
+                                                    userId: widget.userId!,
+                                                  );
+                                                },
+                                              );
+                                            }
+                                          }
+                                        },
+                                      );
+                                    },
                                   ),
                           ],
                         );

@@ -66,28 +66,30 @@ class _SlugMessageChatWidgetState extends State<SlugMessageChatWidget> {
                           ? PersonalChatImage.fromMap(data)
                           : null;
 
-                  if (_message == '') {
-                    // Update
-                    SchedulerBinding.instance!.addPostFrameCallback((_) {
-                      update(
-                        message: (chatText != null)
-                            ? chatText.message!
-                            : (chatAudio != null)
-                                ? 'AUDIO'
-                                : 'IMAGE',
-                        isRead: (chatText != null)
-                            ? chatText.read!
-                            : (chatAudio != null)
-                                ? chatAudio.read!
-                                : chatImage!.read!,
-                      );
-                    });
-                  }
+                  // Update
+                  SchedulerBinding.instance!.addPostFrameCallback((_) {
+                    update(
+                      message: (chatText != null)
+                          ? chatText.message!
+                          : (chatAudio != null)
+                              ? 'AUDIO'
+                              : 'IMAGE',
+                      isRead: (data['from'] == widget.yourId)
+                          ? true
+                          : (chatText != null)
+                              ? chatText.read!
+                              : (chatAudio != null)
+                                  ? chatAudio.read!
+                                  : chatImage!.read!,
+                    );
+                  });
 
                   return Text(
                     _message,
                     style: (_isRead)
-                        ? FontConfig.light(size: 10, color: Colors.grey)
+                        ? FontConfig.light(
+                            size: 10,
+                            color: const Color.fromARGB(255, 37, 36, 36))
                         : FontConfig.bold(size: 10, color: Colors.grey),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -134,23 +136,21 @@ class _SlugMessageChatWidgetState extends State<SlugMessageChatWidget> {
                               ? GroupChatImage.fromMap(data)
                               : null;
 
-                      if (_message == '') {
-                        // Update
-                        SchedulerBinding.instance!.addPostFrameCallback((_) {
-                          update(
-                            message: (chatText != null)
-                                ? chatText.message!
-                                : (chatAudio != null)
-                                    ? 'AUDIO'
-                                    : 'IMAGE',
-                            isRead: (chatText != null)
-                                ? chatText.read!.contains(widget.yourId)
-                                : (chatAudio != null)
-                                    ? chatAudio.read!.contains(widget.yourId)
-                                    : chatImage!.read!.contains(widget.yourId),
-                          );
-                        });
-                      }
+                      // Update
+                      SchedulerBinding.instance!.addPostFrameCallback((_) {
+                        update(
+                          message: (chatText != null)
+                              ? chatText.message!
+                              : (chatAudio != null)
+                                  ? 'AUDIO'
+                                  : 'IMAGE',
+                          isRead: (chatText != null)
+                              ? chatText.read!.contains(widget.yourId)
+                              : (chatAudio != null)
+                                  ? chatAudio.read!.contains(widget.yourId)
+                                  : chatImage!.read!.contains(widget.yourId),
+                        );
+                      });
 
                       return Text(
                         _message,

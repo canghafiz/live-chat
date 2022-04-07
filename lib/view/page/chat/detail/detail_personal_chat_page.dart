@@ -160,150 +160,136 @@ class DetailPersonalChatPage extends StatelessWidget {
                                           snapshot.data!.data()
                                               as Map<String, dynamic>);
 
-                                      return (chat.chats!.isEmpty)
+                                      return (chat.chats == null)
                                           ? const SizedBox()
-                                          : Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                horizontal:
-                                                    VariableConst.margin,
-                                              ),
-                                              child: SingleChildScrollView(
-                                                reverse: true,
-                                                child: Column(
-                                                  children: [
-                                                    const SizedBox(height: 24),
-                                                    Column(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children: chat.chats!
-                                                          .map(
-                                                            (date) => Column(
-                                                              mainAxisSize:
-                                                                  MainAxisSize
-                                                                      .min,
-                                                              children: [
-                                                                Center(
-                                                                  child: Text(
-                                                                    FunctionUtils
-                                                                        .chatTimeCalculate(
-                                                                      date,
+                                          : (chat.chats!.isEmpty)
+                                              ? const SizedBox()
+                                              : Padding(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                    horizontal:
+                                                        VariableConst.margin,
+                                                  ),
+                                                  child: SingleChildScrollView(
+                                                    reverse: true,
+                                                    child: Column(
+                                                      children: [
+                                                        const SizedBox(
+                                                            height: 24),
+                                                        Column(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          children: chat.chats!
+                                                              .map(
+                                                                (date) =>
+                                                                    Column(
+                                                                  mainAxisSize:
+                                                                      MainAxisSize
+                                                                          .min,
+                                                                  children: [
+                                                                    Center(
+                                                                      child:
+                                                                          Text(
+                                                                        FunctionUtils
+                                                                            .chatTimeCalculate(
+                                                                          date,
+                                                                        ),
+                                                                        style: FontConfig
+                                                                            .medium(
+                                                                          size:
+                                                                              12,
+                                                                          color: (isDark)
+                                                                              ? Colors.white
+                                                                              : ColorConfig.colorDark,
+                                                                        ),
+                                                                      ),
                                                                     ),
-                                                                    style: FontConfig
-                                                                        .medium(
-                                                                      size: 12,
-                                                                      color: (isDark)
-                                                                          ? Colors
-                                                                              .white
-                                                                          : ColorConfig
-                                                                              .colorDark,
+                                                                    const SizedBox(
+                                                                      height:
+                                                                          16,
                                                                     ),
-                                                                  ),
-                                                                ),
-                                                                const SizedBox(
-                                                                  height: 16,
-                                                                ),
-                                                                StreamBuilder<
-                                                                    QuerySnapshot>(
-                                                                  stream: FirebaseUtils
-                                                                          .dbChat(
+                                                                    StreamBuilder<
+                                                                        QuerySnapshot>(
+                                                                      stream: FirebaseUtils.dbChat(
                                                                               yourId)
-                                                                      .doc(
-                                                                          userId)
-                                                                      .collection(
-                                                                          date)
-                                                                      .orderBy(
-                                                                          "time")
-                                                                      .snapshots(),
-                                                                  builder: (context,
-                                                                      snapshot) {
-                                                                    if (!snapshot
-                                                                        .hasData) {
-                                                                      return const SizedBox();
-                                                                    }
-                                                                    return Column(
-                                                                      mainAxisSize:
-                                                                          MainAxisSize
-                                                                              .min,
-                                                                      children: snapshot
-                                                                          .data!
-                                                                          .docs
-                                                                          .map(
-                                                                              (doc) {
-                                                                        // Object
-                                                                        final data = doc.data() as Map<
-                                                                            String,
-                                                                            dynamic>;
-                                                                        // Type Handle
-                                                                        final PersonalChatText?
-                                                                            text =
-                                                                            (data['type'] == VariableConst.chatTypeText)
-                                                                                ? PersonalChatText.fromMap(data)
-                                                                                : null;
-                                                                        final PersonalChatImage?
-                                                                            image =
-                                                                            (data['type'] == VariableConst.chatTypeImage)
-                                                                                ? PersonalChatImage.fromMap(data)
-                                                                                : null;
-                                                                        final PersonalChatAudio?
-                                                                            audio =
-                                                                            (data['type'] == VariableConst.chatTypeAudio)
-                                                                                ? PersonalChatAudio.fromMap(data)
-                                                                                : null;
+                                                                          .doc(
+                                                                              userId)
+                                                                          .collection(
+                                                                              date)
+                                                                          .orderBy(
+                                                                              "time")
+                                                                          .snapshots(),
+                                                                      builder:
+                                                                          (context,
+                                                                              snapshot) {
+                                                                        if (!snapshot
+                                                                            .hasData) {
+                                                                          return const SizedBox();
+                                                                        }
 
-                                                                        SchedulerBinding
-                                                                            .instance!
-                                                                            .addPostFrameCallback(
-                                                                          (_) {
-                                                                            if (!data['read']) {
-                                                                              // Update Chat Db
-                                                                              VariableConst.personalDbService.updateReadChat(
-                                                                                yourId: yourId,
-                                                                                date: date,
-                                                                                userId: userId,
-                                                                                chatId: doc.id,
-                                                                              );
-                                                                              VariableConst.personalDbService.updateReadChat(
-                                                                                yourId: userId,
-                                                                                date: date,
-                                                                                userId: yourId,
-                                                                                chatId: doc.id,
-                                                                              );
-                                                                            }
-                                                                          },
-                                                                        );
-
-                                                                        return (text !=
+                                                                        return (snapshot.data ==
                                                                                 null)
-                                                                            ? TextBubbleChat(
-                                                                                yourId: yourId,
-                                                                                personal: text,
-                                                                                group: null,
-                                                                              )
-                                                                            : (image != null)
-                                                                                ? ImageBubbleChat(
-                                                                                    yourId: yourId,
-                                                                                    personal: image,
-                                                                                    group: null,
-                                                                                  )
-                                                                                : AudioBubbleChat(
-                                                                                    yourId: yourId,
-                                                                                    group: null,
-                                                                                    personal: audio,
+                                                                            ? const SizedBox()
+                                                                            : Column(
+                                                                                mainAxisSize: MainAxisSize.min,
+                                                                                children: snapshot.data!.docs.map((doc) {
+                                                                                  // Object
+                                                                                  final data = doc.data() as Map<String, dynamic>;
+                                                                                  // Type Handle
+                                                                                  final PersonalChatText? text = (data['type'] == VariableConst.chatTypeText) ? PersonalChatText.fromMap(data) : null;
+                                                                                  final PersonalChatImage? image = (data['type'] == VariableConst.chatTypeImage) ? PersonalChatImage.fromMap(data) : null;
+                                                                                  final PersonalChatAudio? audio = (data['type'] == VariableConst.chatTypeAudio) ? PersonalChatAudio.fromMap(data) : null;
+
+                                                                                  SchedulerBinding.instance!.addPostFrameCallback(
+                                                                                    (_) {
+                                                                                      if (!data['read'] && data['from'] != yourId) {
+                                                                                        // Update Chat Db
+                                                                                        VariableConst.personalDbService.updateReadChat(
+                                                                                          yourId: yourId,
+                                                                                          date: date,
+                                                                                          userId: userId,
+                                                                                          chatId: doc.id,
+                                                                                        );
+
+                                                                                        VariableConst.personalDbService.updateTotalRead(
+                                                                                          yourId: yourId,
+                                                                                          userId: userId,
+                                                                                          value: 0,
+                                                                                        );
+                                                                                      }
+                                                                                    },
                                                                                   );
-                                                                      }).toList(),
-                                                                    );
-                                                                  },
+
+                                                                                  return (text != null)
+                                                                                      ? TextBubbleChat(
+                                                                                          yourId: yourId,
+                                                                                          personal: text,
+                                                                                          group: null,
+                                                                                        )
+                                                                                      : (image != null)
+                                                                                          ? ImageBubbleChat(
+                                                                                              yourId: yourId,
+                                                                                              personal: image,
+                                                                                              group: null,
+                                                                                            )
+                                                                                          : AudioBubbleChat(
+                                                                                              yourId: yourId,
+                                                                                              group: null,
+                                                                                              personal: audio,
+                                                                                            );
+                                                                                }).toList(),
+                                                                              );
+                                                                      },
+                                                                    ),
+                                                                  ],
                                                                 ),
-                                                              ],
-                                                            ),
-                                                          )
-                                                          .toList(),
+                                                              )
+                                                              .toList(),
+                                                        ),
+                                                      ],
                                                     ),
-                                                  ],
-                                                ),
-                                              ),
-                                            );
+                                                  ),
+                                                );
                                     }
                                     return const SizedBox();
                                   }

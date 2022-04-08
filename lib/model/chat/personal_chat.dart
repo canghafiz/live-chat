@@ -115,13 +115,13 @@ class PersonalChatAudio {
 }
 
 // Low Level
-class PersonalChatService {
+class PersonalChatDbService {
   // Singleton
   static final _instance =
-      PersonalChatService._constructor(PersonalChatFirebaseDb());
-  PersonalChatService._constructor(this._dataManager);
+      PersonalChatDbService._constructor(PersonalChatFirebaseDb());
+  PersonalChatDbService._constructor(this._dataManager);
 
-  factory PersonalChatService() {
+  factory PersonalChatDbService() {
     return _instance;
   }
 

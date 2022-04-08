@@ -55,38 +55,38 @@ class GroupDetailPage extends StatelessWidget {
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),
-        body: Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(25),
-              topRight: Radius.circular(25),
-            ),
-            color: (isDark) ? ColorConfig.colorDark : Colors.white,
-          ),
-          child: StreamBuilder<DocumentSnapshot>(
-            stream: FirebaseUtils.dbGroup(groupId).snapshots(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const SizedBox();
-              }
-              // Object
-              final Group group =
-                  Group.fromMap(snapshot.data!.data() as Map<String, dynamic>);
+        body: StreamBuilder<DocumentSnapshot>(
+          stream: FirebaseUtils.dbGroup(groupId).snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const SizedBox();
+            }
+            // Object
+            final Group group =
+                Group.fromMap(snapshot.data!.data() as Map<String, dynamic>);
 
-              return StreamBuilder<DocumentSnapshot>(
-                stream: FirebaseUtils.dbUser(group.owner!).snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const SizedBox();
-                  }
-                  // Object
-                  final User user = User.fromMap(
-                      snapshot.data!.data() as Map<String, dynamic>);
+            return StreamBuilder<DocumentSnapshot>(
+              stream: FirebaseUtils.dbUser(group.owner!).snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const SizedBox();
+                }
+                // Object
+                final User user =
+                    User.fromMap(snapshot.data!.data() as Map<String, dynamic>);
 
-                  return SingleChildScrollView(
+                return Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(25),
+                      topRight: Radius.circular(25),
+                    ),
+                    color: (isDark) ? ColorConfig.colorDark : Colors.white,
+                  ),
+                  child: SingleChildScrollView(
                     child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         const SizedBox(height: 24),
@@ -642,11 +642,11 @@ class GroupDetailPage extends StatelessWidget {
                               )
                       ],
                     ),
-                  );
-                },
-              );
-            },
-          ),
+                  ),
+                );
+              },
+            );
+          },
         ),
       ),
     );

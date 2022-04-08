@@ -244,14 +244,14 @@ class DetailPersonalChatPage extends StatelessWidget {
                                                                                     (_) {
                                                                                       if (!data['read'] && data['from'] != yourId) {
                                                                                         // Update Chat Db
-                                                                                        VariableConst.personalDbService.updateReadChat(
+                                                                                        VariableConst.personalChatDbService.updateReadChat(
                                                                                           yourId: yourId,
                                                                                           date: date,
                                                                                           userId: userId,
                                                                                           chatId: doc.id,
                                                                                         );
 
-                                                                                        VariableConst.personalDbService.updateTotalRead(
+                                                                                        VariableConst.personalChatDbService.updateTotalRead(
                                                                                           yourId: yourId,
                                                                                           userId: userId,
                                                                                           value: 0,

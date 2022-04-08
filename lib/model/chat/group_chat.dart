@@ -127,7 +127,6 @@ class GroupChatDbService {
     // Update Chat Db
     FirebaseUtils.dbChatGroup(groupId)
         .where("date", isEqualTo: VariableConst.timeYearMonthDay)
-        .orderBy("date", descending: true)
         .get()
         .then(
       (query) {
@@ -142,17 +141,18 @@ class GroupChatDbService {
             },
           ).then(
             (_) {
-              for (DocumentSnapshot doc in query.docs) {
-                // Data
-                final Map<String, dynamic> data =
-                    doc.data() as Map<String, dynamic>;
-
-                if (data['date'] == VariableConst.timeYearMonthDay) {
-                  // Call Send Chat
-                  sendChat.call(doc.id);
-                  _dataManager.updateChatDate(groupId);
-                }
-              }
+              FirebaseUtils.dbChatGroup(groupId)
+                  .where("date", isEqualTo: VariableConst.timeYearMonthDay)
+                  .get()
+                  .then(
+                (query) {
+                  if (query.docs.isNotEmpty) {
+                    // Call Send Chat
+                    sendChat.call(query.docs[0].id);
+                    _dataManager.updateChatDate(groupId);
+                  }
+                },
+              );
             },
           );
         }

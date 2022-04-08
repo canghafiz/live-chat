@@ -100,6 +100,7 @@ class DetailGroupChatPage extends StatelessWidget {
                           child: StreamBuilder<QuerySnapshot>(
                             stream: FirebaseUtils.dbGroup(groupId)
                                 .collection('CHAT')
+                                .orderBy("date")
                                 .snapshots(),
                             builder: (context, snapshot) {
                               if (!snapshot.hasData) {

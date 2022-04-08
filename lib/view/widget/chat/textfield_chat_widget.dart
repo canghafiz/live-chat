@@ -173,7 +173,7 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                             );
                                           },
                                         );
-                                      }
+                                      } else {}
                                     },
                                     imageNotNull: false,
                                     delete: () {},
@@ -260,8 +260,24 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                             yourId: widget.yourId,
                                             userId: widget.userId!,
                                           );
-                                          controller.clear();
-                                          return;
+                                        }
+
+                                        // For Group
+                                        else if (widget.groupId != null) {
+                                          VariableConst.groupChatDbService
+                                              .sendChat(
+                                            groupId: widget.groupId!,
+                                            sendChat: (value) {
+                                              // Update Group Db
+                                              VariableConst.groupChatDbService
+                                                  .sendText(
+                                                groupId: widget.groupId!,
+                                                chatId: value,
+                                                from: widget.yourId,
+                                                message: controller.text,
+                                              );
+                                            },
+                                          );
                                         }
                                       }
                                     },

@@ -15,9 +15,14 @@ class VariableConst {
   static const chatTypeImage = 'Image';
   static const callTypeVoice = 'Voice';
   static const callTypeVideo = 'Video';
-  static final timeYearMonthDay =
-      "${DateTime.now().year}-${(DateTime.now().month.toString().length < 2) ? "0${DateTime.now().month}" : "${DateTime.now().month}"}-${(DateTime.now().day.toString().length < 2) ? "0${DateTime.now().day}" : "${DateTime.now().day}"}";
-  static final timeHourMin = "${DateTime.now().hour}:${DateTime.now().minute}";
+  static String timeYearMonthDay() {
+    return "${DateTime.now().year}-${(DateTime.now().month.toString().length < 2) ? "0${DateTime.now().month}" : "${DateTime.now().month}"}-${(DateTime.now().day.toString().length < 2) ? "0${DateTime.now().day}" : "${DateTime.now().day}"}";
+  }
+
+  static String timeHourMin() {
+    return "${(DateTime.now().hour.toString().length < 2) ? "0${DateTime.now().hour}" : "${DateTime.now().hour}"}:${(DateTime.now().minute.toString().length < 2) ? "0${DateTime.now().minute}" : "${DateTime.now().minute}"}";
+  }
+
   static final PersonalChatDbService personalChatDbService =
       PersonalChatDbService();
   static final GroupChatDbService groupChatDbService = GroupChatDbService();

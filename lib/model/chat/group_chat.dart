@@ -22,7 +22,7 @@ class GroupChatText {
       "from": from,
       "message": message,
       "read": [from],
-      "time": VariableConst.timeHourMin,
+      "time": VariableConst.timeHourMin.call().toString(),
       "type": VariableConst.chatTypeText,
     };
   }
@@ -56,7 +56,7 @@ class GroupChatImage {
       "from": from,
       "url": url,
       "read": [from],
-      "time": VariableConst.timeHourMin,
+      "time": VariableConst.timeHourMin.call().toString(),
       "type": VariableConst.chatTypeImage,
     };
   }
@@ -90,7 +90,7 @@ class GroupChatAudio {
       "from": from,
       "url": url,
       "read": [from],
-      "time": VariableConst.timeHourMin,
+      "time": VariableConst.timeHourMin.call().toString(),
       "type": VariableConst.chatTypeAudio,
     };
   }
@@ -126,7 +126,8 @@ class GroupChatDbService {
   }) {
     // Update Chat Db
     FirebaseUtils.dbChatGroup(groupId)
-        .where("date", isEqualTo: VariableConst.timeYearMonthDay)
+        .where("date",
+            isEqualTo: VariableConst.timeYearMonthDay.call().toString())
         .get()
         .then(
       (query) {
@@ -137,12 +138,14 @@ class GroupChatDbService {
         } else {
           FirebaseUtils.dbChatGroup(groupId).add(
             {
-              "date": VariableConst.timeYearMonthDay,
+              "date": VariableConst.timeYearMonthDay.call().toString(),
             },
           ).then(
             (_) {
               FirebaseUtils.dbChatGroup(groupId)
-                  .where("date", isEqualTo: VariableConst.timeYearMonthDay)
+                  .where("date",
+                      isEqualTo:
+                          VariableConst.timeYearMonthDay.call().toString())
                   .get()
                   .then(
                 (query) {
@@ -303,7 +306,7 @@ class GroupChatFirebaseDb implements GroupChatDataManager {
   Future<void> updateChatDate(String groupId) async {
     await FirebaseUtils.dbGroup(groupId).update({
       "chat_date":
-          "${VariableConst.timeYearMonthDay} ${VariableConst.timeHourMin}"
+          "${VariableConst.timeYearMonthDay.call().toString()} ${VariableConst.timeHourMin.call().toString()}"
     });
   }
 

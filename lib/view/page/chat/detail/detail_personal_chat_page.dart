@@ -262,6 +262,8 @@ class DetailPersonalChatPage extends StatelessWidget {
 
                                                                                   return (text != null)
                                                                                       ? TextBubbleChat(
+                                                                                          userId: userId,
+                                                                                          chatId: doc.id,
                                                                                           yourId: yourId,
                                                                                           personal: text,
                                                                                           group: null,

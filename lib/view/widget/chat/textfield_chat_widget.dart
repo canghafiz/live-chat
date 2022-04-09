@@ -128,16 +128,16 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                   context: context,
                                   content: PhotoBottomWidget(
                                     dbUpdate: (value) {
-                                      // For Personal
-                                      if (widget.userId != null) {
-                                        //  Update Storage
-                                        FirebaseStorageService.uploadImage(
-                                          folderName:
-                                              VariableConst.imageChatStorage,
-                                          fileName: basename(value.path),
-                                          pickedFile: XFile(value.path),
-                                        ).then(
-                                          (url) {
+                                      //  Update Storage
+                                      FirebaseStorageService.uploadImage(
+                                        folderName:
+                                            VariableConst.imageChatStorage,
+                                        fileName: basename(value.path),
+                                        pickedFile: XFile(value.path),
+                                      ).then(
+                                        (url) {
+                                          if (widget.userId != null) {
+                                            // For Personal
                                             // Update Chat Db
                                             VariableConst.personalChatDbService
                                                 .sendChat(
@@ -149,7 +149,9 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                                   yourId: widget.yourId,
                                                   userId: widget.userId!,
                                                   date: VariableConst
-                                                      .timeYearMonthDay,
+                                                      .timeYearMonthDay
+                                                      .call()
+                                                      .toString(),
                                                   url: url,
                                                   from: widget.yourId,
                                                 );
@@ -161,7 +163,9 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                                   yourId: widget.userId!,
                                                   userId: widget.yourId,
                                                   date: VariableConst
-                                                      .timeYearMonthDay,
+                                                      .timeYearMonthDay
+                                                      .call()
+                                                      .toString(),
                                                   url: url,
                                                   from: widget.yourId,
                                                 );
@@ -171,9 +175,27 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                               yourId: widget.yourId,
                                               userId: widget.userId!,
                                             );
-                                          },
-                                        );
-                                      } else {}
+                                          } else {
+                                            // For Group
+                                            // Update Chat Db
+                                            VariableConst.groupChatDbService
+                                                .sendChat(
+                                              groupId: widget.groupId!,
+                                              sendChat: (value) {
+                                                VariableConst.groupChatDbService
+                                                    .sendImage(
+                                                  groupId: widget.groupId!,
+                                                  chatId: value,
+                                                  from: widget.yourId,
+                                                  url: url,
+                                                );
+
+                                                Navigator.pop(context);
+                                              },
+                                            );
+                                          }
+                                        },
+                                      );
                                     },
                                     imageNotNull: false,
                                     delete: () {},
@@ -241,7 +263,9 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                                 userId: widget.userId!,
                                                 from: widget.yourId,
                                                 date: VariableConst
-                                                    .timeYearMonthDay,
+                                                    .timeYearMonthDay
+                                                    .call()
+                                                    .toString(),
                                                 message: controller.text,
                                               );
 
@@ -253,17 +277,20 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                                 userId: widget.yourId,
                                                 from: widget.yourId,
                                                 date: VariableConst
-                                                    .timeYearMonthDay,
+                                                    .timeYearMonthDay
+                                                    .call()
+                                                    .toString(),
                                                 message: controller.text,
                                               );
+
+                                              controller.clear();
                                             },
                                             yourId: widget.yourId,
                                             userId: widget.userId!,
                                           );
                                         }
-
                                         // For Group
-                                        else if (widget.groupId != null) {
+                                        else {
                                           VariableConst.groupChatDbService
                                               .sendChat(
                                             groupId: widget.groupId!,
@@ -276,6 +303,8 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                                 from: widget.yourId,
                                                 message: controller.text,
                                               );
+
+                                              controller.clear();
                                             },
                                           );
                                         }
@@ -397,17 +426,16 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                       FunctionUtils.recorderFilePath().then(
                                         (path) {
                                           if (File(path).existsSync()) {
-                                            // For Personal
-                                            if (widget.userId != null) {
-                                              //  Update Storage
-                                              FirebaseStorageService
-                                                  .uploadAudio(
-                                                folderName: VariableConst
-                                                    .imageChatStorage,
-                                                fileName: basename(path),
-                                                file: File(path),
-                                              ).then(
-                                                (url) {
+                                            //  Update Storage
+                                            FirebaseStorageService.uploadAudio(
+                                              folderName: VariableConst
+                                                  .imageChatStorage,
+                                              fileName: basename(path),
+                                              file: File(path),
+                                            ).then(
+                                              (url) {
+                                                if (widget.userId != null) {
+                                                  // For Personal
                                                   // Update Chat Db
                                                   VariableConst
                                                       .personalChatDbService
@@ -420,7 +448,9 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                                         yourId: widget.yourId,
                                                         userId: widget.userId!,
                                                         date: VariableConst
-                                                            .timeYearMonthDay,
+                                                            .timeYearMonthDay
+                                                            .call()
+                                                            .toString(),
                                                         url: url,
                                                         from: widget.yourId,
                                                       );
@@ -432,7 +462,9 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                                         yourId: widget.userId!,
                                                         userId: widget.yourId,
                                                         date: VariableConst
-                                                            .timeYearMonthDay,
+                                                            .timeYearMonthDay
+                                                            .call()
+                                                            .toString(),
                                                         url: url,
                                                         from: widget.yourId,
                                                       );
@@ -445,9 +477,32 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                                     yourId: widget.yourId,
                                                     userId: widget.userId!,
                                                   );
-                                                },
-                                              );
-                                            }
+                                                } else {
+                                                  // For Group
+                                                  // Update Chat Db
+                                                  VariableConst
+                                                      .groupChatDbService
+                                                      .sendChat(
+                                                    groupId: widget.groupId!,
+                                                    sendChat: (value) {
+                                                      VariableConst
+                                                          .groupChatDbService
+                                                          .sendAudio(
+                                                        groupId:
+                                                            widget.groupId!,
+                                                        chatId: value,
+                                                        from: widget.yourId,
+                                                        url: url,
+                                                      );
+                                                    },
+                                                  );
+
+                                                  // Update State
+                                                  ChatCubitHandle.read(context)
+                                                      .setTextfield(true);
+                                                }
+                                              },
+                                            );
                                           }
                                         },
                                       );

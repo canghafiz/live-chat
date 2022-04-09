@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:live_chat/cubit/export_cubit.dart';
 import 'package:live_chat/model/export_model.dart';
@@ -156,7 +157,9 @@ class DetailGroupChatPage extends StatelessWidget {
                                                               .doc(data.id)
                                                               .collection(
                                                                   'DATA')
-                                                              .orderBy('time')
+                                                              .orderBy(
+                                                                'time',
+                                                              )
                                                               .snapshots(),
                                                           builder: (context,
                                                               snapshot) {
@@ -172,40 +175,72 @@ class DetailGroupChatPage extends StatelessWidget {
                                                                   .data!.docs
                                                                   .map((doc) {
                                                                 // Object
-                                                                final data = doc
+                                                                final chatData = doc
                                                                         .data()
                                                                     as Map<
                                                                         String,
                                                                         dynamic>;
+
+                                                                SchedulerBinding
+                                                                    .instance!
+                                                                    .addPostFrameCallback(
+                                                                  (_) {
+                                                                    List read =
+                                                                        chatData[
+                                                                            'read'];
+                                                                    if (!read
+                                                                        .contains(
+                                                                            yourId)) {
+                                                                      // Update Chat Db
+                                                                      VariableConst
+                                                                          .groupChatDbService
+                                                                          .updateChatRead(
+                                                                        groupId:
+                                                                            groupId,
+                                                                        chatId:
+                                                                            data.id,
+                                                                        chatsId:
+                                                                            doc.id,
+                                                                        userId:
+                                                                            yourId,
+                                                                      );
+                                                                    }
+                                                                  },
+                                                                );
+
                                                                 // Type Handle
-                                                                final GroupChatText? text = (data[
+                                                                final GroupChatText? text = (chatData[
                                                                             'type'] ==
                                                                         VariableConst
                                                                             .chatTypeText)
                                                                     ? GroupChatText
                                                                         .fromMap(
-                                                                            data)
+                                                                            chatData)
                                                                     : null;
-                                                                final GroupChatImage? image = (data[
+                                                                final GroupChatImage? image = (chatData[
                                                                             'type'] ==
                                                                         VariableConst
                                                                             .chatTypeImage)
                                                                     ? GroupChatImage
                                                                         .fromMap(
-                                                                            data)
+                                                                            chatData)
                                                                     : null;
-                                                                final GroupChatAudio? audio = (data[
+                                                                final GroupChatAudio? audio = (chatData[
                                                                             'type'] ==
                                                                         VariableConst
                                                                             .chatTypeAudio)
                                                                     ? GroupChatAudio
                                                                         .fromMap(
-                                                                            data)
+                                                                            chatData)
                                                                     : null;
 
                                                                 return (text !=
                                                                         null)
                                                                     ? TextBubbleChat(
+                                                                        userId:
+                                                                            null,
+                                                                        chatId:
+                                                                            doc.id,
                                                                         yourId:
                                                                             yourId,
                                                                         personal:

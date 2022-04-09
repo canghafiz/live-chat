@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:live_chat/service/export_service.dart';
 import 'package:live_chat/utils/export_utils.dart';
 
 class PersonalChatText {
@@ -24,7 +25,7 @@ class PersonalChatText {
       "from": userId,
       "message": message,
       "read": false,
-      "time": VariableConst.timeHourMin,
+      "time": VariableConst.timeHourMin.call().toString(),
       "type": VariableConst.chatTypeText,
     };
   }
@@ -61,7 +62,7 @@ class PersonalChatImage {
       "from": userId,
       "url": url,
       "read": false,
-      "time": VariableConst.timeHourMin,
+      "time": VariableConst.timeHourMin.call().toString(),
       "type": VariableConst.chatTypeImage,
     };
   }
@@ -98,7 +99,7 @@ class PersonalChatAudio {
       "from": userId,
       "url": url,
       "read": false,
-      "time": VariableConst.timeHourMin,
+      "time": VariableConst.timeHourMin.call().toString(),
       "type": VariableConst.chatTypeAudio,
     };
   }
@@ -151,7 +152,8 @@ class PersonalChatDbService {
         if (data['chats'] != null) {
           List chats = data["chats"];
 
-          if (!chats.contains(VariableConst.timeYearMonthDay)) {
+          if (!chats
+              .contains(VariableConst.timeYearMonthDay.call().toString())) {
             updateChats(yourId: yourId, userId: userId);
           }
         } else {
@@ -174,7 +176,8 @@ class PersonalChatDbService {
         if (data["chats"] != null) {
           List chats = data["chats"];
 
-          if (!chats.contains(VariableConst.timeYearMonthDay)) {
+          if (!chats
+              .contains(VariableConst.timeYearMonthDay.call().toString())) {
             updateChats(yourId: userId, userId: yourId);
           }
         } else {
@@ -191,7 +194,8 @@ class PersonalChatDbService {
     // Update Count Read
     FirebaseUtils.dbChat(userId)
         .doc(yourId)
-        .collection(VariableConst.timeYearMonthDay)
+        .collection(VariableConst.timeYearMonthDay.call().toString())
+        .where("from", isEqualTo: yourId)
         .where("read", isEqualTo: false)
         .get()
         .then(
@@ -201,6 +205,128 @@ class PersonalChatDbService {
             value: query.docs.length,
           ),
         );
+  }
+
+  void deleteChatText({
+    required String userId,
+    required String yourId,
+    required String chatId,
+    required String message,
+  }) {
+    // For You
+    FirebaseUtils.dbChat(yourId).doc(userId).get().then(
+      (doc) {
+        // Data
+        final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        List chats = data['chats'];
+        String date = chats[chats.length - 1];
+
+        _dataManager.deleteChat(
+          yourId: yourId,
+          userId: userId,
+          date: date,
+          chatId: chatId,
+        );
+      },
+    );
+
+    // For User
+    FirebaseUtils.dbChat(userId).doc(yourId).get().then(
+      (doc) {
+        // Data
+        final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        List chats = data['chats'];
+        String date = chats[chats.length - 1];
+
+        FirebaseUtils.dbChat(userId)
+            .doc(yourId)
+            .collection(date)
+            .where("type", isEqualTo: VariableConst.chatTypeText)
+            .get()
+            .then(
+          (query) {
+            for (DocumentSnapshot doc in query.docs) {
+              // Object
+              final PersonalChatText chat =
+                  PersonalChatText.fromMap(doc.data() as Map<String, dynamic>);
+
+              if (chat.message == message) {
+                // Update Chat Db
+                _dataManager.deleteChat(
+                  yourId: userId,
+                  userId: yourId,
+                  date: date,
+                  chatId: doc.id,
+                );
+              }
+            }
+          },
+        );
+      },
+    );
+  }
+
+  void deleteChatFile({
+    required String userId,
+    required String yourId,
+    required String chatId,
+    required String url,
+  }) {
+    // For You
+    FirebaseUtils.dbChat(yourId).doc(userId).get().then(
+      (doc) {
+        // Data
+        final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        List chats = data['chats'];
+        String date = chats[chats.length - 1];
+
+        // Update Firebase Storage
+        FirebaseStorageService.delete(url);
+
+        // Update Chat Db
+        _dataManager.deleteChat(
+          yourId: yourId,
+          userId: userId,
+          date: date,
+          chatId: chatId,
+        );
+      },
+    );
+
+    // For User
+    FirebaseUtils.dbChat(userId).doc(yourId).get().then(
+      (doc) {
+        // Data
+        final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        List chats = data['chats'];
+        String date = chats[chats.length - 1];
+
+        FirebaseUtils.dbChat(userId)
+            .doc(yourId)
+            .collection(date)
+            .where("type", isNotEqualTo: VariableConst.chatTypeText)
+            .get()
+            .then(
+          (query) {
+            for (DocumentSnapshot doc in query.docs) {
+              // Data
+              final Map<String, dynamic> data =
+                  doc.data() as Map<String, dynamic>;
+
+              if (data['url'] == url) {
+                // Update Chat Db
+                _dataManager.deleteChat(
+                  yourId: userId,
+                  userId: yourId,
+                  date: date,
+                  chatId: doc.id,
+                );
+              }
+            }
+          },
+        );
+      },
+    );
   }
 
   Future<void> updateChats({
@@ -356,6 +482,13 @@ abstract class PersonalChatDataManager {
     required String url,
     required String from,
   });
+
+  FutureOr<void> deleteChat({
+    required String yourId,
+    required String userId,
+    required String date,
+    required String chatId,
+  });
 }
 
 // Firebase
@@ -448,7 +581,7 @@ class PersonalChatFirebaseDb implements PersonalChatDataManager {
     FirebaseUtils.dbChat(yourId).doc(userId).set(
       {
         "date":
-            "${VariableConst.timeYearMonthDay} ${VariableConst.timeHourMin}",
+            "${VariableConst.timeYearMonthDay.call().toString()} ${VariableConst.timeHourMin.call().toString()}",
       },
       SetOptions(merge: true),
     );
@@ -461,9 +594,24 @@ class PersonalChatFirebaseDb implements PersonalChatDataManager {
   }) async {
     FirebaseUtils.dbChat(yourId).doc(userId).set(
       {
-        "chats": FieldValue.arrayUnion([VariableConst.timeYearMonthDay]),
+        "chats": FieldValue.arrayUnion(
+            [VariableConst.timeYearMonthDay.call().toString()]),
       },
       SetOptions(merge: true),
     );
+  }
+
+  @override
+  Future<void> deleteChat({
+    required String yourId,
+    required String userId,
+    required String date,
+    required String chatId,
+  }) async {
+    await FirebaseUtils.dbChat(yourId)
+        .doc(userId)
+        .collection(date)
+        .doc(chatId)
+        .delete();
   }
 }

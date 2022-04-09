@@ -179,9 +179,7 @@ class ImageBubbleChat extends StatelessWidget {
                             ),
                           ),
                           child: Column(
-                            crossAxisAlignment: (fromYou)
-                                ? CrossAxisAlignment.end
-                                : CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               (fromYou)
                                   ? Text(
@@ -216,6 +214,7 @@ class ImageBubbleChat extends StatelessWidget {
                                         );
                                       },
                                     ),
+                              const SizedBox(height: 8),
                               SizedBox(
                                 width: MediaQuery.of(context).size.width -
                                     MediaQuery.of(context).size.width * 1 / 3,

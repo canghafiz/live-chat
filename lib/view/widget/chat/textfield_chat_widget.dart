@@ -32,6 +32,22 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
   // Controller
   TextEditingController controller = TextEditingController();
 
+  void sendPersonalNotification(String message) {
+    NotificationService.sendNotification(
+      title: widget.yourId,
+      subject: message,
+      topics: "from${widget.yourId}to${widget.userId}",
+    );
+  }
+
+  void sendGroupNotification(String message) {
+    NotificationService.sendNotification(
+      title: widget.yourId,
+      subject: message,
+      topics: widget.groupId!,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -170,6 +186,11 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                                   from: widget.yourId,
                                                 );
 
+                                                // Send Notification
+                                                sendPersonalNotification(
+                                                  "IMAGE",
+                                                );
+
                                                 Navigator.pop(context);
                                               },
                                               yourId: widget.yourId,
@@ -189,6 +210,9 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                                   from: widget.yourId,
                                                   url: url,
                                                 );
+
+                                                // Send Notification
+                                                sendGroupNotification("IMAGE");
 
                                                 Navigator.pop(context);
                                               },
@@ -283,6 +307,11 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                                 message: controller.text,
                                               );
 
+                                              // Send Notification
+                                              sendPersonalNotification(
+                                                controller.text,
+                                              );
+
                                               controller.clear();
                                             },
                                             yourId: widget.yourId,
@@ -302,6 +331,11 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                                 chatId: value,
                                                 from: widget.yourId,
                                                 message: controller.text,
+                                              );
+
+                                              // Send Notification
+                                              sendGroupNotification(
+                                                controller.text,
                                               );
 
                                               controller.clear();
@@ -469,6 +503,11 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                                         from: widget.yourId,
                                                       );
 
+                                                      // Send Notification
+                                                      sendPersonalNotification(
+                                                        "AUDIO",
+                                                      );
+
                                                       // Update State
                                                       ChatCubitHandle.read(
                                                               context)
@@ -495,6 +534,11 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                                         url: url,
                                                       );
                                                     },
+                                                  );
+
+                                                  // Send Notification
+                                                  sendGroupNotification(
+                                                    "AUDIO",
                                                   );
 
                                                   // Update State

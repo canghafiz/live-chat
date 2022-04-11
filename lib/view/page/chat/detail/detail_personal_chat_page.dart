@@ -4,6 +4,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:live_chat/cubit/export_cubit.dart';
 import 'package:live_chat/model/export_model.dart';
+import 'package:live_chat/service/export_service.dart';
 import 'package:live_chat/utils/export_utils.dart';
 import 'package:live_chat/view/export_view.dart';
 
@@ -242,6 +243,10 @@ class DetailPersonalChatPage extends StatelessWidget {
 
                                                                                   SchedulerBinding.instance!.addPostFrameCallback(
                                                                                     (_) {
+                                                                                      // Update Token
+                                                                                      NotificationService.unSubscribeTopic(
+                                                                                        "from${userId}to$yourId",
+                                                                                      );
                                                                                       if (!data['read'] && data['from'] != yourId) {
                                                                                         // Update Chat Db
                                                                                         VariableConst.personalChatDbService.updateReadChat(

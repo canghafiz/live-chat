@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:live_chat/model/export_model.dart';
+import 'package:live_chat/service/export_service.dart';
 import 'package:live_chat/utils/export_utils.dart';
 
 class User {
@@ -41,6 +43,71 @@ class User {
   static const String _profileUrl = "Profile/Users/";
 
   static String get profileUrl => _profileUrl;
+
+  // Token Notification
+  static void subsToken(String userId) {
+    String structure(String id) {
+      return "from${id}to$userId";
+    }
+
+    FirebaseUtils.dbUser(userId).snapshots().listen(
+      (doc) {
+        // Object
+        final User user = User.fromMap(doc.data() as Map<String, dynamic>);
+
+        // Personal
+        if (user.contacts!.isNotEmpty) {
+          for (Map<String, dynamic> data in user.contacts!) {
+            // Object
+            final ContactUser contact = ContactUser.fromMap(data);
+            // Update Token
+            NotificationService.subscribeTopic(
+              structure(contact.userId!).toString(),
+            );
+          }
+        }
+
+        if (user.groups!.isNotEmpty) {
+          for (String groupId in user.groups!) {
+            // Update Token
+            NotificationService.subscribeTopic(groupId);
+          }
+        }
+      },
+    );
+  }
+
+  static void unsubsToken(String userId) {
+    String structure(String id) {
+      return "from${id}to$userId";
+    }
+
+    FirebaseUtils.dbUser(userId).get().then(
+      (doc) {
+        // Object
+        final User user = User.fromMap(doc.data() as Map<String, dynamic>);
+
+        // Personal
+        if (user.contacts!.isNotEmpty) {
+          for (Map<String, dynamic> data in user.contacts!) {
+            // Object
+            final ContactUser contact = ContactUser.fromMap(data);
+            // Update Token
+            NotificationService.unSubscribeTopic(
+              structure(contact.userId!).toString(),
+            );
+          }
+        }
+
+        if (user.groups!.isNotEmpty) {
+          for (String groupId in user.groups!) {
+            // Update Token
+            NotificationService.unSubscribeTopic(groupId);
+          }
+        }
+      },
+    );
+  }
 }
 
 // Low Level

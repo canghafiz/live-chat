@@ -29,6 +29,8 @@ class ProfilePage extends StatelessWidget {
               onPressed: () {
                 // Update User Db
                 User.dbService.updateOnlineStatus(userId: userId, value: false);
+                // Update Token
+                User.unsubsToken(userId);
                 // Call Auth
                 AuthService.signOut();
               },

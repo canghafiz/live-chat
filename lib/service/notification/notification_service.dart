@@ -25,10 +25,10 @@ class NotificationService {
     required BuildContext context,
     required String yourId,
   }) async {
-    await onMessage(context: context, yourId: yourId);
+    await _onMessage(context: context, yourId: yourId);
   }
 
-  static Future<void> onMessage({
+  static Future<void> _onMessage({
     required BuildContext context,
     required String yourId,
   }) async {
@@ -61,8 +61,12 @@ class NotificationService {
                   android: AndroidNotificationDetails(
                     channel.id,
                     channel.name,
+                    groupKey: channel.groupId,
                     playSound: true,
                     icon: "@mipmap/ic_launcher",
+                    setAsGroupSummary: true,
+                    priority: Priority.high,
+                    importance: Importance.max,
                   ),
                 ),
               );

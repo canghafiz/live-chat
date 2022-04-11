@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:live_chat/cubit/export_cubit.dart';
 import 'package:live_chat/model/export_model.dart';
+import 'package:live_chat/service/export_service.dart';
 import 'package:live_chat/utils/export_utils.dart';
 import 'package:live_chat/view/export_view.dart';
 
@@ -19,6 +20,13 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
     super.initState();
     // Update User Db
     User.dbService.updateOnlineStatus(userId: widget.userId, value: true);
+    // Update Token
+    User.subsToken(widget.userId);
+    // Notification
+    NotificationService.setupMessageHandling(
+      context: context,
+      yourId: widget.userId,
+    );
   }
 
   @override

@@ -1,6 +1,8 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:live_chat/cubit/export_cubit.dart';
 import 'package:live_chat/service/export_service.dart';
 import 'package:live_chat/utils/export_utils.dart';
@@ -11,6 +13,24 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer/sizer.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+// Global Key
+final navigatorKey = GlobalKey<NavigatorState>();
+
+// Notification
+Future<void> firebaseMessagingBackground(RemoteMessage message) async {
+  debugPrint("Handling a background message: ${message.messageId}");
+}
+
+const AndroidNotificationChannel channel = AndroidNotificationChannel(
+  "high_importance_channel",
+  "High Important Notifications",
+  importance: Importance.high,
+  playSound: true,
+);
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Device Orientation Just Potrait
@@ -19,6 +39,17 @@ void main() async {
   await Firebase.initializeApp();
   // Env
   await dotenv.load(fileName: "assets/.env");
+  // Notification
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackground);
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()!
+      .createNotificationChannel(channel);
+  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
   runApp(const MainApp());
 }
 

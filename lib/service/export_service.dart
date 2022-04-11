@@ -7,3 +7,4 @@ export 'package:live_chat/service/timer/timer_service.dart';
 export 'package:live_chat/service/rtc/rtc_engine_service.dart';
 export 'package:live_chat/service/image/image_service.dart';
 export 'package:live_chat/service/storage/firebase_storage_service.dart';
+export 'package:live_chat/service/notification/notification_service.dart';

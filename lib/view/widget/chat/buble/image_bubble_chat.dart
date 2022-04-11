@@ -5,23 +5,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:live_chat/cubit/export_cubit.dart';
 import 'package:live_chat/model/export_model.dart';
 import 'package:live_chat/utils/export_utils.dart';
-import 'package:live_chat/view/export_view.dart';
 
 class ImageBubbleChat extends StatelessWidget {
   const ImageBubbleChat({
     Key? key,
-    required this.chatId,
     required this.yourId,
-    required this.userId,
     required this.personal,
     required this.group,
-    required this.index,
   }) : super(key: key);
-  final String yourId, chatId;
-  final String? userId;
+  final String yourId;
   final PersonalChatImage? personal;
   final GroupChatImage? group;
-  final int index;
 
   @override
   Widget build(BuildContext context) {
@@ -35,28 +29,6 @@ class ImageBubbleChat extends StatelessWidget {
           url: (personal != null) ? personal!.url! : group!.url!,
           file: null,
         );
-      },
-      onLongPress: () {
-        if (fromYou) {
-          showDialog(
-            context: context,
-            builder: (context) => deleteChatWidget(
-              () {
-                if (personal != null && userId != null) {
-                  // For Personal
-                  VariableConst.personalChatDbService.deleteChatFile(
-                    userId: userId!,
-                    yourId: yourId,
-                    chatId: chatId,
-                    url: personal!.url!,
-                    index: index,
-                  );
-                }
-                Navigator.pop(context);
-              },
-            ),
-          );
-        }
       },
       child: Padding(
         padding: const EdgeInsets.only(bottom: 16),

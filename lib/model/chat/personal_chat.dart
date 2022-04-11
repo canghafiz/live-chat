@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:live_chat/service/export_service.dart';
 import 'package:live_chat/utils/export_utils.dart';
 
 class PersonalChatText {
@@ -138,9 +137,17 @@ class PersonalChatDbService {
     sendChat.call();
 
     // For You
-    updateChatDate(yourId: yourId, userId: userId);
+    updateChatDate(
+        yourId: yourId,
+        userId: userId,
+        value:
+            "${VariableConst.timeYearMonthDay.call().toString()} ${VariableConst.timeHourMin.call().toString()}");
     // For User
-    updateChatDate(yourId: userId, userId: yourId);
+    updateChatDate(
+        yourId: userId,
+        userId: yourId,
+        value:
+            "${VariableConst.timeYearMonthDay.call().toString()} ${VariableConst.timeHourMin.call().toString()}");
 
     // Call Chat Db
     // For You
@@ -207,113 +214,6 @@ class PersonalChatDbService {
         );
   }
 
-  void deleteChatText({
-    required String userId,
-    required String yourId,
-    required String chatId,
-    required int index,
-  }) {
-    // For You
-    FirebaseUtils.dbChat(yourId).doc(userId).get().then(
-      (doc) {
-        // Data
-        final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        List chats = data['chats'];
-        String date = chats[chats.length - 1];
-
-        _dataManager.deleteChat(
-          yourId: yourId,
-          userId: userId,
-          date: date,
-          chatId: chatId,
-        );
-      },
-    );
-
-    // For User
-    FirebaseUtils.dbChat(userId).doc(yourId).get().then(
-      (doc) {
-        // Data
-        final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        List chats = data['chats'];
-        String date = chats[chats.length - 1];
-
-        FirebaseUtils.dbChat(userId)
-            .doc(yourId)
-            .collection(date)
-            .orderBy("time")
-            .get()
-            .then(
-          (query) {
-            // Update Chat Db
-            _dataManager.deleteChat(
-              yourId: userId,
-              userId: yourId,
-              date: date,
-              chatId: query.docs[index].id,
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void deleteChatFile({
-    required String userId,
-    required String yourId,
-    required String chatId,
-    required String url,
-    required int index,
-  }) {
-    // For You
-    FirebaseUtils.dbChat(yourId).doc(userId).get().then(
-      (doc) {
-        // Data
-        final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        List chats = data['chats'];
-        String date = chats[chats.length - 1];
-
-        // Update Firebase Storage
-        FirebaseStorageService.delete(url);
-
-        // Update Chat Db
-        _dataManager.deleteChat(
-          yourId: yourId,
-          userId: userId,
-          date: date,
-          chatId: chatId,
-        );
-      },
-    );
-
-    // For User
-    FirebaseUtils.dbChat(userId).doc(yourId).get().then(
-      (doc) {
-        // Data
-        final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        List chats = data['chats'];
-        String date = chats[chats.length - 1];
-
-        FirebaseUtils.dbChat(userId)
-            .doc(yourId)
-            .collection(date)
-            .orderBy("time")
-            .get()
-            .then(
-          (query) {
-            // Update Chat Db
-            _dataManager.deleteChat(
-              yourId: userId,
-              userId: yourId,
-              date: date,
-              chatId: query.docs[index].id,
-            );
-          },
-        );
-      },
-    );
-  }
-
   Future<void> updateChats({
     required String yourId,
     required String userId,
@@ -324,8 +224,13 @@ class PersonalChatDbService {
   Future<void> updateChatDate({
     required String yourId,
     required String userId,
+    required String value,
   }) async {
-    _dataManager.updateChatDate(yourId: yourId, userId: userId);
+    _dataManager.updateChatDate(
+      yourId: yourId,
+      userId: userId,
+      value: value,
+    );
   }
 
   Future<void> updateReadChat({
@@ -429,6 +334,7 @@ abstract class PersonalChatDataManager {
   FutureOr<void> updateChatDate({
     required String yourId,
     required String userId,
+    required String value,
   });
 
   FutureOr<void> updateReadChat({
@@ -466,13 +372,6 @@ abstract class PersonalChatDataManager {
     required String date,
     required String url,
     required String from,
-  });
-
-  FutureOr<void> deleteChat({
-    required String yourId,
-    required String userId,
-    required String date,
-    required String chatId,
   });
 }
 
@@ -562,11 +461,11 @@ class PersonalChatFirebaseDb implements PersonalChatDataManager {
   Future<void> updateChatDate({
     required String yourId,
     required String userId,
+    required String value,
   }) async {
     FirebaseUtils.dbChat(yourId).doc(userId).set(
       {
-        "date":
-            "${VariableConst.timeYearMonthDay.call().toString()} ${VariableConst.timeHourMin.call().toString()}",
+        "date": value,
       },
       SetOptions(merge: true),
     );
@@ -584,19 +483,5 @@ class PersonalChatFirebaseDb implements PersonalChatDataManager {
       },
       SetOptions(merge: true),
     );
-  }
-
-  @override
-  Future<void> deleteChat({
-    required String yourId,
-    required String userId,
-    required String date,
-    required String chatId,
-  }) async {
-    await FirebaseUtils.dbChat(yourId)
-        .doc(userId)
-        .collection(date)
-        .doc(chatId)
-        .delete();
   }
 }

@@ -234,58 +234,33 @@ class DetailGroupChatPage extends StatelessWidget {
                                                                             chatData)
                                                                     : null;
 
-                                                                // Indexing message
-                                                                final int index = snapshot
-                                                                    .data!.docs
-                                                                    .indexWhere((data) =>
-                                                                        data.id ==
-                                                                        doc.id);
-
                                                                 return (text !=
                                                                         null)
                                                                     ? TextBubbleChat(
-                                                                        userId:
-                                                                            null,
-                                                                        chatId:
-                                                                            doc.id,
                                                                         yourId:
                                                                             yourId,
                                                                         personal:
                                                                             null,
                                                                         group:
                                                                             text,
-                                                                        index:
-                                                                            index,
                                                                       )
                                                                     : (image !=
                                                                             null)
                                                                         ? ImageBubbleChat(
-                                                                            userId:
-                                                                                null,
-                                                                            chatId:
-                                                                                doc.id,
                                                                             yourId:
                                                                                 yourId,
                                                                             personal:
                                                                                 null,
                                                                             group:
                                                                                 image,
-                                                                            index:
-                                                                                index,
                                                                           )
                                                                         : AudioBubbleChat(
-                                                                            userId:
-                                                                                null,
-                                                                            chatId:
-                                                                                doc.id,
                                                                             yourId:
                                                                                 yourId,
                                                                             group:
                                                                                 audio,
                                                                             personal:
                                                                                 null,
-                                                                            index:
-                                                                                index,
                                                                           );
                                                               }).toList(),
                                                             );

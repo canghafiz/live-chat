@@ -429,7 +429,7 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                             //  Update Storage
                                             FirebaseStorageService.uploadAudio(
                                               folderName: VariableConst
-                                                  .imageChatStorage,
+                                                  .audioChatStorage,
                                               fileName: basename(path),
                                               file: File(path),
                                             ).then(

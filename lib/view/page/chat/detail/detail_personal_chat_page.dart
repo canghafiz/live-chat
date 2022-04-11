@@ -232,66 +232,52 @@ class DetailPersonalChatPage extends StatelessWidget {
                                                                             ? const SizedBox()
                                                                             : Column(
                                                                                 mainAxisSize: MainAxisSize.min,
-                                                                                children: snapshot.data!.docs.map(
-                                                                                  (doc) {
-                                                                                    // Object
-                                                                                    final data = doc.data() as Map<String, dynamic>;
-                                                                                    // Type Handle
-                                                                                    final PersonalChatText? text = (data['type'] == VariableConst.chatTypeText) ? PersonalChatText.fromMap(data) : null;
-                                                                                    final PersonalChatImage? image = (data['type'] == VariableConst.chatTypeImage) ? PersonalChatImage.fromMap(data) : null;
-                                                                                    final PersonalChatAudio? audio = (data['type'] == VariableConst.chatTypeAudio) ? PersonalChatAudio.fromMap(data) : null;
+                                                                                children: snapshot.data!.docs.map((doc) {
+                                                                                  // Object
+                                                                                  final data = doc.data() as Map<String, dynamic>;
+                                                                                  // Type Handle
+                                                                                  final PersonalChatText? text = (data['type'] == VariableConst.chatTypeText) ? PersonalChatText.fromMap(data) : null;
+                                                                                  final PersonalChatImage? image = (data['type'] == VariableConst.chatTypeImage) ? PersonalChatImage.fromMap(data) : null;
+                                                                                  final PersonalChatAudio? audio = (data['type'] == VariableConst.chatTypeAudio) ? PersonalChatAudio.fromMap(data) : null;
 
-                                                                                    // Indexing message
-                                                                                    final int index = snapshot.data!.docs.indexWhere((data) => data.id == doc.id);
+                                                                                  SchedulerBinding.instance!.addPostFrameCallback(
+                                                                                    (_) {
+                                                                                      if (!data['read'] && data['from'] != yourId) {
+                                                                                        // Update Chat Db
+                                                                                        VariableConst.personalChatDbService.updateReadChat(
+                                                                                          yourId: yourId,
+                                                                                          date: date,
+                                                                                          userId: userId,
+                                                                                          chatId: doc.id,
+                                                                                        );
 
-                                                                                    SchedulerBinding.instance!.addPostFrameCallback(
-                                                                                      (_) {
-                                                                                        if (!data['read'] && data['from'] != yourId) {
-                                                                                          // Update Chat Db
-                                                                                          VariableConst.personalChatDbService.updateReadChat(
-                                                                                            yourId: yourId,
-                                                                                            date: date,
-                                                                                            userId: userId,
-                                                                                            chatId: doc.id,
-                                                                                          );
+                                                                                        VariableConst.personalChatDbService.updateTotalRead(
+                                                                                          yourId: yourId,
+                                                                                          userId: userId,
+                                                                                          value: 0,
+                                                                                        );
+                                                                                      }
+                                                                                    },
+                                                                                  );
 
-                                                                                          VariableConst.personalChatDbService.updateTotalRead(
-                                                                                            yourId: yourId,
-                                                                                            userId: userId,
-                                                                                            value: 0,
-                                                                                          );
-                                                                                        }
-                                                                                      },
-                                                                                    );
-
-                                                                                    return (text != null)
-                                                                                        ? TextBubbleChat(
-                                                                                            userId: userId,
-                                                                                            chatId: doc.id,
-                                                                                            yourId: yourId,
-                                                                                            personal: text,
-                                                                                            group: null,
-                                                                                            index: index,
-                                                                                          )
-                                                                                        : (image != null)
-                                                                                            ? ImageBubbleChat(
-                                                                                                userId: userId,
-                                                                                                chatId: doc.id,
-                                                                                                yourId: yourId,
-                                                                                                personal: image,
-                                                                                                group: null,
-                                                                                                index: index,
-                                                                                              )
-                                                                                            : AudioBubbleChat(
-                                                                                                userId: userId,
-                                                                                                chatId: doc.id,
-                                                                                                yourId: yourId,
-                                                                                                group: null,
-                                                                                                personal: audio,
-                                                                                                index: index,
-                                                                                              );
-                                                                                  },
-                                                                                ).toList(),
+                                                                                  return (text != null)
+                                                                                      ? TextBubbleChat(
+                                                                                          yourId: yourId,
+                                                                                          personal: text,
+                                                                                          group: null,
+                                                                                        )
+                                                                                      : (image != null)
+                                                                                          ? ImageBubbleChat(
+                                                                                              yourId: yourId,
+                                                                                              personal: image,
+                                                                                              group: null,
+                                                                                            )
+                                                                                          : AudioBubbleChat(
+                                                                                              yourId: yourId,
+                                                                                              group: null,
+                                                                                              personal: audio,
+                                                                                            );
+                                                                                }).toList(),
                                                                               );
                                                                       },
                                                                     ),

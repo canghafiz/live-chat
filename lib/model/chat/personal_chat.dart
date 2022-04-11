@@ -211,7 +211,7 @@ class PersonalChatDbService {
     required String userId,
     required String yourId,
     required String chatId,
-    required String message,
+    required int index,
   }) {
     // For You
     FirebaseUtils.dbChat(yourId).doc(userId).get().then(
@@ -241,25 +241,17 @@ class PersonalChatDbService {
         FirebaseUtils.dbChat(userId)
             .doc(yourId)
             .collection(date)
-            .where("type", isEqualTo: VariableConst.chatTypeText)
+            .orderBy("time")
             .get()
             .then(
           (query) {
-            for (DocumentSnapshot doc in query.docs) {
-              // Object
-              final PersonalChatText chat =
-                  PersonalChatText.fromMap(doc.data() as Map<String, dynamic>);
-
-              if (chat.message == message) {
-                // Update Chat Db
-                _dataManager.deleteChat(
-                  yourId: userId,
-                  userId: yourId,
-                  date: date,
-                  chatId: doc.id,
-                );
-              }
-            }
+            // Update Chat Db
+            _dataManager.deleteChat(
+              yourId: userId,
+              userId: yourId,
+              date: date,
+              chatId: query.docs[index].id,
+            );
           },
         );
       },
@@ -271,6 +263,7 @@ class PersonalChatDbService {
     required String yourId,
     required String chatId,
     required String url,
+    required int index,
   }) {
     // For You
     FirebaseUtils.dbChat(yourId).doc(userId).get().then(
@@ -304,25 +297,17 @@ class PersonalChatDbService {
         FirebaseUtils.dbChat(userId)
             .doc(yourId)
             .collection(date)
-            .where("type", isNotEqualTo: VariableConst.chatTypeText)
+            .orderBy("time")
             .get()
             .then(
           (query) {
-            for (DocumentSnapshot doc in query.docs) {
-              // Data
-              final Map<String, dynamic> data =
-                  doc.data() as Map<String, dynamic>;
-
-              if (data['url'] == url) {
-                // Update Chat Db
-                _dataManager.deleteChat(
-                  yourId: userId,
-                  userId: yourId,
-                  date: date,
-                  chatId: doc.id,
-                );
-              }
-            }
+            // Update Chat Db
+            _dataManager.deleteChat(
+              yourId: userId,
+              userId: yourId,
+              date: date,
+              chatId: query.docs[index].id,
+            );
           },
         );
       },

@@ -14,10 +14,15 @@ class AudioBubbleChat extends StatefulWidget {
     required this.yourId,
     required this.group,
     required this.personal,
+    required this.chatId,
+    required this.userId,
+    required this.index,
   }) : super(key: key);
-  final String yourId;
+  final String yourId, chatId;
+  final String? userId;
   final PersonalChatAudio? personal;
   final GroupChatAudio? group;
+  final int index;
 
   @override
   State<AudioBubbleChat> createState() => _AudioBubbleChatState();
@@ -55,240 +60,268 @@ class _AudioBubbleChatState extends State<AudioBubbleChat>
     final bool fromYou = (widget.personal != null)
         ? widget.personal!.from == widget.yourId
         : widget.group!.from == widget.yourId;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: BlocSelector<ThemeCubit, ThemeState, bool>(
-        selector: (state) => state.isDark,
-        builder: (context, isDark) => (widget.personal != null)
-            ? Row(
-                mainAxisAlignment:
-                    (fromYou) ? MainAxisAlignment.end : MainAxisAlignment.start,
-                children: [
-                  (fromYou)
-                      ? (widget.personal!.read!)
-                          ? Icon(
-                              Icons.done_all,
-                              color: (isDark)
-                                  ? Colors.white
-                                  : ColorConfig.colorDark,
-                            )
-                          : Icon(
-                              Icons.check,
-                              color: (isDark)
-                                  ? Colors.white
-                                  : ColorConfig.colorDark,
-                            )
-                      : const SizedBox(),
-                  (fromYou)
-                      ? const SizedBox(width: 8)
-                      : const SizedBox(width: 0),
-                  Flexible(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: (fromYou)
-                            ? ColorConfig.colorPrimary
-                            : (isDark)
-                                ? Colors.white
-                                : ColorConfig.colorPrimary.withOpacity(0.2),
-                        borderRadius: BorderRadius.only(
-                          topLeft: const Radius.circular(25),
-                          topRight: const Radius.circular(25),
-                          bottomRight: Radius.circular((fromYou) ? 0 : 25),
-                          bottomLeft: Radius.circular((fromYou) ? 25 : 0),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          ControlButton(
-                            player: _player.audioPlayer,
-                            fromYou: fromYou,
-                          ),
-                          Flexible(
-                            child: StreamBuilder<PositionData>(
-                              stream: _player.playerDataStream,
-                              builder: (context, snapshot) {
-                                final positionData = snapshot.data;
-                                return SeekBar(
-                                  fromYou: fromYou,
-                                  duration:
-                                      positionData?.duration ?? Duration.zero,
-                                  position:
-                                      positionData?.position ?? Duration.zero,
-                                  bufferedPosition:
-                                      positionData?.bufferedPosition ??
-                                          Duration.zero,
-                                  onChangeEnd: _player.seek,
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            widget.personal!.time!,
-                            style: FontConfig.light(
-                                size: 10,
-                                color: (fromYou)
+    return GestureDetector(
+      onTap: () {
+        if (fromYou) {
+          showDialog(
+            context: context,
+            builder: (context) => deleteChatWidget(
+              () {
+                if (widget.personal != null && widget.userId != null) {
+                  // For Personal
+                  VariableConst.personalChatDbService.deleteChatFile(
+                    userId: widget.userId!,
+                    yourId: widget.yourId,
+                    chatId: widget.chatId,
+                    url: widget.personal!.url!,
+                    index: widget.index,
+                  );
+                }
+                Navigator.pop(context);
+              },
+            ),
+          );
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: BlocSelector<ThemeCubit, ThemeState, bool>(
+          selector: (state) => state.isDark,
+          builder: (context, isDark) => (widget.personal != null)
+              ? Row(
+                  mainAxisAlignment: (fromYou)
+                      ? MainAxisAlignment.end
+                      : MainAxisAlignment.start,
+                  children: [
+                    (fromYou)
+                        ? (widget.personal!.read!)
+                            ? Icon(
+                                Icons.done_all,
+                                color: (isDark)
                                     ? Colors.white
-                                    : ColorConfig.colorDark),
+                                    : ColorConfig.colorDark,
+                              )
+                            : Icon(
+                                Icons.check,
+                                color: (isDark)
+                                    ? Colors.white
+                                    : ColorConfig.colorDark,
+                              )
+                        : const SizedBox(),
+                    (fromYou)
+                        ? const SizedBox(width: 8)
+                        : const SizedBox(width: 0),
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: (fromYou)
+                              ? ColorConfig.colorPrimary
+                              : (isDark)
+                                  ? Colors.white
+                                  : ColorConfig.colorPrimary.withOpacity(0.2),
+                          borderRadius: BorderRadius.only(
+                            topLeft: const Radius.circular(25),
+                            topRight: const Radius.circular(25),
+                            bottomRight: Radius.circular((fromYou) ? 0 : 25),
+                            bottomLeft: Radius.circular((fromYou) ? 25 : 0),
                           ),
-                        ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ControlButton(
+                              player: _player.audioPlayer,
+                              fromYou: fromYou,
+                            ),
+                            Flexible(
+                              child: StreamBuilder<PositionData>(
+                                stream: _player.playerDataStream,
+                                builder: (context, snapshot) {
+                                  final positionData = snapshot.data;
+                                  return SeekBar(
+                                    fromYou: fromYou,
+                                    duration:
+                                        positionData?.duration ?? Duration.zero,
+                                    position:
+                                        positionData?.position ?? Duration.zero,
+                                    bufferedPosition:
+                                        positionData?.bufferedPosition ??
+                                            Duration.zero,
+                                    onChangeEnd: _player.seek,
+                                  );
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              widget.personal!.time!,
+                              style: FontConfig.light(
+                                  size: 10,
+                                  color: (fromYou)
+                                      ? Colors.white
+                                      : ColorConfig.colorDark),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  (!fromYou)
-                      ? const SizedBox(width: 8)
-                      : const SizedBox(width: 0),
-                  (!widget.personal!.read! && !fromYou)
-                      ? Text(
-                          "New",
-                          style: FontConfig.light(
-                            size: 12,
-                            color:
-                                (isDark) ? Colors.white : ColorConfig.colorDark,
+                    (!fromYou)
+                        ? const SizedBox(width: 8)
+                        : const SizedBox(width: 0),
+                    (!widget.personal!.read! && !fromYou)
+                        ? Text(
+                            "New",
+                            style: FontConfig.light(
+                              size: 12,
+                              color: (isDark)
+                                  ? Colors.white
+                                  : ColorConfig.colorDark,
+                            ),
+                          )
+                        : const SizedBox(),
+                  ],
+                )
+              : Row(
+                  mainAxisAlignment: (fromYou)
+                      ? MainAxisAlignment.end
+                      : MainAxisAlignment.start,
+                  children: [
+                    (fromYou)
+                        ? (widget.group!.read!
+                                .where((id) => id != widget.yourId)
+                                .isNotEmpty)
+                            ? Icon(
+                                Icons.done_all,
+                                color: (isDark)
+                                    ? Colors.white
+                                    : ColorConfig.colorDark,
+                              )
+                            : Icon(
+                                Icons.check,
+                                color: (isDark)
+                                    ? Colors.white
+                                    : ColorConfig.colorDark,
+                              )
+                        : const SizedBox(),
+                    (fromYou)
+                        ? const SizedBox(width: 8)
+                        : const SizedBox(width: 0),
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: (fromYou)
+                              ? ColorConfig.colorPrimary
+                              : (isDark)
+                                  ? Colors.white
+                                  : ColorConfig.colorPrimary.withOpacity(0.2),
+                          borderRadius: BorderRadius.only(
+                            topLeft: const Radius.circular(25),
+                            topRight: const Radius.circular(25),
+                            bottomRight: Radius.circular((fromYou) ? 0 : 25),
+                            bottomLeft: Radius.circular((fromYou) ? 25 : 0),
                           ),
-                        )
-                      : const SizedBox(),
-                ],
-              )
-            : Row(
-                mainAxisAlignment:
-                    (fromYou) ? MainAxisAlignment.end : MainAxisAlignment.start,
-                children: [
-                  (fromYou)
-                      ? (widget.group!.read!
-                              .where((id) => id != widget.yourId)
-                              .isNotEmpty)
-                          ? Icon(
-                              Icons.done_all,
-                              color: (isDark)
-                                  ? Colors.white
-                                  : ColorConfig.colorDark,
-                            )
-                          : Icon(
-                              Icons.check,
-                              color: (isDark)
-                                  ? Colors.white
-                                  : ColorConfig.colorDark,
-                            )
-                      : const SizedBox(),
-                  (fromYou)
-                      ? const SizedBox(width: 8)
-                      : const SizedBox(width: 0),
-                  Flexible(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: (fromYou)
-                            ? ColorConfig.colorPrimary
-                            : (isDark)
-                                ? Colors.white
-                                : ColorConfig.colorPrimary.withOpacity(0.2),
-                        borderRadius: BorderRadius.only(
-                          topLeft: const Radius.circular(25),
-                          topRight: const Radius.circular(25),
-                          bottomRight: Radius.circular((fromYou) ? 0 : 25),
-                          bottomLeft: Radius.circular((fromYou) ? 25 : 0),
                         ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          (fromYou)
-                              ? Text(
-                                  "You",
-                                  style: FontConfig.bold(
-                                      size: 12,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            (fromYou)
+                                ? Text(
+                                    "You",
+                                    style: FontConfig.bold(
+                                        size: 12,
+                                        color: (fromYou)
+                                            ? Colors.white
+                                            : ColorConfig.colorDark),
+                                  )
+                                : StreamBuilder<DocumentSnapshot>(
+                                    stream: FirebaseUtils.dbUser(
+                                            widget.group!.from!)
+                                        .snapshots(),
+                                    builder: (context, snapshot) {
+                                      if (!snapshot.hasData) {
+                                        return const SizedBox();
+                                      }
+                                      // Object
+                                      final User user = User.fromMap(
+                                          snapshot.data!.data()
+                                              as Map<String, dynamic>);
+
+                                      return Text(
+                                        user.name!,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: FontConfig.bold(
+                                            size: 12,
+                                            color: (fromYou)
+                                                ? Colors.white
+                                                : ColorConfig.colorDark),
+                                      );
+                                    },
+                                  ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ControlButton(
+                                    player: _player.audioPlayer,
+                                    fromYou: fromYou),
+                                Flexible(
+                                  child: StreamBuilder<PositionData>(
+                                    stream: _player.playerDataStream,
+                                    builder: (context, snapshot) {
+                                      final positionData = snapshot.data;
+                                      return SeekBar(
+                                        fromYou: fromYou,
+                                        duration: positionData?.duration ??
+                                            Duration.zero,
+                                        position: positionData?.position ??
+                                            Duration.zero,
+                                        bufferedPosition:
+                                            positionData?.bufferedPosition ??
+                                                Duration.zero,
+                                        onChangeEnd: _player.seek,
+                                      );
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  widget.group!.time!,
+                                  style: FontConfig.light(
+                                      size: 10,
                                       color: (fromYou)
                                           ? Colors.white
                                           : ColorConfig.colorDark),
-                                )
-                              : StreamBuilder<DocumentSnapshot>(
-                                  stream:
-                                      FirebaseUtils.dbUser(widget.group!.from!)
-                                          .snapshots(),
-                                  builder: (context, snapshot) {
-                                    if (!snapshot.hasData) {
-                                      return const SizedBox();
-                                    }
-                                    // Object
-                                    final User user = User.fromMap(
-                                        snapshot.data!.data()
-                                            as Map<String, dynamic>);
-
-                                    return Text(
-                                      user.name!,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: FontConfig.bold(
-                                          size: 12,
-                                          color: (fromYou)
-                                              ? Colors.white
-                                              : ColorConfig.colorDark),
-                                    );
-                                  },
                                 ),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              ControlButton(
-                                  player: _player.audioPlayer,
-                                  fromYou: fromYou),
-                              Flexible(
-                                child: StreamBuilder<PositionData>(
-                                  stream: _player.playerDataStream,
-                                  builder: (context, snapshot) {
-                                    final positionData = snapshot.data;
-                                    return SeekBar(
-                                      fromYou: fromYou,
-                                      duration: positionData?.duration ??
-                                          Duration.zero,
-                                      position: positionData?.position ??
-                                          Duration.zero,
-                                      bufferedPosition:
-                                          positionData?.bufferedPosition ??
-                                              Duration.zero,
-                                      onChangeEnd: _player.seek,
-                                    );
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                widget.group!.time!,
-                                style: FontConfig.light(
-                                    size: 10,
-                                    color: (fromYou)
-                                        ? Colors.white
-                                        : ColorConfig.colorDark),
-                              ),
-                            ],
-                          ),
-                        ],
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  (!fromYou)
-                      ? const SizedBox(width: 8)
-                      : const SizedBox(width: 0),
-                  (widget.group!.read!
-                              .where((id) => id == widget.yourId)
-                              .isEmpty &&
-                          !fromYou)
-                      ? Text(
-                          "New",
-                          style: FontConfig.light(
-                            size: 12,
-                            color:
-                                (isDark) ? Colors.white : ColorConfig.colorDark,
-                          ),
-                        )
-                      : const SizedBox(),
-                ],
-              ),
+                    (!fromYou)
+                        ? const SizedBox(width: 8)
+                        : const SizedBox(width: 0),
+                    (widget.group!.read!
+                                .where((id) => id == widget.yourId)
+                                .isEmpty &&
+                            !fromYou)
+                        ? Text(
+                            "New",
+                            style: FontConfig.light(
+                              size: 12,
+                              color: (isDark)
+                                  ? Colors.white
+                                  : ColorConfig.colorDark,
+                            ),
+                          )
+                        : const SizedBox(),
+                  ],
+                ),
+        ),
       ),
     );
   }

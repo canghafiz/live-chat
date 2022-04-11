@@ -5,7 +5,7 @@ import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:live_chat/cubit/export_cubit.dart';
 import 'package:live_chat/model/export_model.dart';
 import 'package:live_chat/utils/export_utils.dart';
-import 'package:live_chat/view/widget/chat/delete_chat_widget.dart';
+import 'package:live_chat/view/export_view.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TextBubbleChat extends StatelessWidget {
@@ -16,10 +16,12 @@ class TextBubbleChat extends StatelessWidget {
     required this.userId,
     required this.personal,
     required this.group,
+    required this.index,
   }) : super(key: key);
   final String yourId, chatId;
   final String? userId;
   final PersonalChatText? personal;
+  final int index;
   final GroupChatText? group;
 
   @override
@@ -39,7 +41,7 @@ class TextBubbleChat extends StatelessWidget {
                     userId: userId!,
                     yourId: yourId,
                     chatId: chatId,
-                    message: personal!.message!,
+                    index: index,
                   );
                 }
                 Navigator.pop(context);

@@ -108,10 +108,12 @@ class NotificationService {
           setAsGroupSummary: true,
           priority: Priority.high,
           importance: Importance.max,
+          playSound: false,
           sound: RawResourceAndroidNotificationSound(sound.split(".").first),
         ),
         iOS: const IOSNotificationDetails(
           sound: sound,
+          presentSound: false,
         ),
       ),
     );

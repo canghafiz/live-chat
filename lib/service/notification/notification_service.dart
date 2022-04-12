@@ -53,27 +53,67 @@ class NotificationService {
                   User.fromMap(doc.data() as Map<String, dynamic>);
 
               // Notif structure
-              flutterLocalNotificationsPlugin.show(
-                notification.hashCode,
-                user.name,
-                notification.body,
-                NotificationDetails(
-                  android: AndroidNotificationDetails(
-                    channel.id,
-                    channel.name,
-                    groupKey: channel.groupId,
-                    playSound: true,
-                    icon: "@mipmap/ic_launcher",
-                    setAsGroupSummary: true,
-                    priority: Priority.high,
-                    importance: Importance.max,
-                  ),
-                ),
-              );
+              if (message.data["type"] == "Video Call" ||
+                  message.data["type"] == "Voice Call") {
+                _callNotifStructure(notification: notification, user: user);
+              } else {
+                _messageNotifStructure(notification: notification, user: user);
+              }
             },
           );
         }
       },
+    );
+  }
+
+  static void _messageNotifStructure({
+    required RemoteNotification notification,
+    required User user,
+  }) {
+    flutterLocalNotificationsPlugin.show(
+      notification.hashCode,
+      user.name,
+      notification.body,
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          channel.id,
+          channel.name,
+          groupKey: channel.groupId,
+          playSound: true,
+          icon: "@mipmap/ic_launcher",
+          setAsGroupSummary: true,
+          priority: Priority.high,
+          importance: Importance.max,
+        ),
+        iOS: const IOSNotificationDetails(),
+      ),
+    );
+  }
+
+  static void _callNotifStructure({
+    required RemoteNotification notification,
+    required User user,
+  }) {
+    const sound = "call_notification.wav";
+    flutterLocalNotificationsPlugin.show(
+      notification.hashCode,
+      user.name,
+      notification.body,
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          channel.id,
+          channel.name,
+          groupKey: channel.groupId,
+          icon: "@mipmap/ic_launcher",
+          setAsGroupSummary: true,
+          priority: Priority.high,
+          importance: Importance.max,
+          sound: RawResourceAndroidNotificationSound(sound.split(".").first),
+        ),
+        iOS: const IOSNotificationDetails(
+          sound: sound,
+        ),
+      ),
     );
   }
 
@@ -111,6 +151,7 @@ class NotificationService {
     required String title,
     required String subject,
     required String topics,
+    required String type,
   }) async {
     var postUrl = 'https://fcm.googleapis.com/fcm/send';
 
@@ -124,6 +165,7 @@ class NotificationService {
         "status": "done",
         "sound": 'default',
         "screen": topics,
+        "type": type,
       },
       "to": toParams,
     };

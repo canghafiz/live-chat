@@ -28,4 +28,5 @@ class VariableConst {
   static final GroupChatDbService groupChatDbService = GroupChatDbService();
   static const String imageChatStorage = "Chat/Images/";
   static const String audioChatStorage = "Chat/Audio/";
+  static const notificationSound = "call_notification";
 }

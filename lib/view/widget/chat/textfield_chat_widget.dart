@@ -37,7 +37,7 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
       title: widget.yourId,
       subject: message,
       topics: "from${widget.yourId}to${widget.userId}",
-      type: "Chat",
+      type: "Personal Chat",
     );
   }
 
@@ -46,7 +46,7 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
       title: widget.yourId,
       subject: message,
       topics: widget.groupId!,
-      type: "Chat",
+      type: "Group Chat",
     );
   }
 

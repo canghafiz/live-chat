@@ -2,11 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:live_chat/model/export_model.dart';
-import 'package:live_chat/utils/const/variable.dart';
+import 'package:live_chat/utils/export_utils.dart';
 import 'package:live_chat/view/export_view.dart';
 
 class RouteHandle {
-  static PageRoute _goToPage(Widget screen) {
+  static PageRoute goToPage(Widget screen) {
     return PageRouteBuilder(
       pageBuilder: (_, __, ___) => screen,
       transitionDuration: const Duration(seconds: 0),
@@ -15,7 +15,7 @@ class RouteHandle {
 
   // Auth
   static toPasswordChange(BuildContext context) {
-    Navigator.push(context, _goToPage(const PasswordPage()));
+    Navigator.push(context, goToPage(const PasswordPage()));
   }
 
   // Main
@@ -26,7 +26,7 @@ class RouteHandle {
     // Navigate
     Navigator.pushAndRemoveUntil(
         context,
-        _goToPage(
+        goToPage(
           MainPage(
             userId: userId,
           ),
@@ -42,7 +42,7 @@ class RouteHandle {
   }) {
     Navigator.push(
       context,
-      _goToPage(
+      goToPage(
         DetailPersonalChatPage(
           userId: userId,
           yourId: yourId,
@@ -58,7 +58,7 @@ class RouteHandle {
   }) {
     Navigator.push(
       context,
-      _goToPage(
+      goToPage(
         DetailGroupChatPage(
           groupId: groupId,
           yourId: yourId,
@@ -74,7 +74,7 @@ class RouteHandle {
   }) {
     Navigator.push(
       context,
-      _goToPage(ImageDetailPage(url: url, file: file)),
+      goToPage(ImageDetailPage(url: url, file: file)),
     );
   }
 
@@ -86,7 +86,7 @@ class RouteHandle {
   }) {
     Navigator.push(
       context,
-      _goToPage(
+      goToPage(
         PersonalDetailPage(userId: userId, yourId: yourId),
       ),
     );
@@ -99,7 +99,7 @@ class RouteHandle {
   }) {
     Navigator.push(
       context,
-      _goToPage(
+      goToPage(
         GroupDetailPage(groupId: groupId, yourId: yourId),
       ),
     );
@@ -111,7 +111,7 @@ class RouteHandle {
   }) {
     Navigator.push(
       context,
-      _goToPage(
+      goToPage(
         CreateGroupPage(yourId: yourId),
       ),
     );
@@ -124,7 +124,7 @@ class RouteHandle {
   }) {
     Navigator.push(
       context,
-      _goToPage(
+      goToPage(
         AddMemberPage(groupId: groupId, userId: userId),
       ),
     );
@@ -188,7 +188,7 @@ class RouteHandle {
   }) {
     Navigator.push(
       context,
-      _goToPage(
+      goToPage(
         DetailCallPage(
           call: call,
           callId: callId,
@@ -204,15 +204,44 @@ class RouteHandle {
     required String yourId,
     required CallType type,
   }) {
-    Navigator.push(
-      context,
-      _goToPage(
-        VoiceCallPage(
-          callType: type,
-          userId: userId,
-          yourId: yourId,
-        ),
-      ),
+    Channel.checkChannelOtherCall(userId).then(
+      (allow) {
+        if (!allow) {
+          // Update Db
+          Channel.dbService.updateCallingProcess(
+            userId: (type == CallType.caller) ? yourId : userId,
+            value: (type == CallType.caller) ? "Calling" : "Accept",
+          );
+          // For You
+          Channel.dbService.updateOnOtherCall(
+            userId: yourId,
+            value: true,
+          );
+          // For User
+          Channel.dbService.updateOnOtherCall(
+            userId: userId,
+            value: true,
+          );
+
+          Navigator.push(
+            context,
+            goToPage(
+              VoiceCallPage(
+                callType: type,
+                userId: userId,
+                yourId: yourId,
+              ),
+            ),
+          );
+        } else {
+          // Show Snackbar
+          showCustomSnackbar(
+            context: context,
+            text: "User is on other calling!",
+            color: Colors.red,
+          );
+        }
+      },
     );
   }
 
@@ -222,20 +251,49 @@ class RouteHandle {
     required String yourId,
     required CallType type,
   }) {
-    Navigator.push(
-      context,
-      _goToPage(
-        VideoCallPage(
-          callType: type,
-          userId: userId,
-          yourId: yourId,
-        ),
-      ),
+    Channel.checkChannelOtherCall(userId).then(
+      (allow) {
+        if (!allow) {
+          // Update Db
+          Channel.dbService.updateCallingProcess(
+            userId: (type == CallType.caller) ? yourId : userId,
+            value: (type == CallType.caller) ? "Calling" : "Accept",
+          );
+          // For You
+          Channel.dbService.updateOnOtherCall(
+            userId: yourId,
+            value: true,
+          );
+          // For User
+          Channel.dbService.updateOnOtherCall(
+            userId: userId,
+            value: true,
+          );
+
+          Navigator.push(
+            context,
+            goToPage(
+              VideoCallPage(
+                callType: type,
+                userId: userId,
+                yourId: yourId,
+              ),
+            ),
+          );
+        } else {
+          // Show Snackbar
+          showCustomSnackbar(
+            context: context,
+            text: "User is on other calling!",
+            color: Colors.red,
+          );
+        }
+      },
     );
   }
 
   //  Web
   static toWeb(BuildContext context) {
-    Navigator.push(context, _goToPage(const WebPage()));
+    Navigator.push(context, goToPage(const WebPage()));
   }
 }

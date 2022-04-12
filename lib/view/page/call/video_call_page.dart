@@ -26,6 +26,7 @@ class VideoCallPage extends StatefulWidget {
 class _VideoCallPageState extends State<VideoCallPage>
     with WidgetsBindingObserver {
   int remoteId = 0;
+  bool isAccept = false;
 
   void udpateRemoteId(int value) {
     setState(() {
@@ -33,10 +34,17 @@ class _VideoCallPageState extends State<VideoCallPage>
     });
   }
 
+  void updateIsAccept(bool value) {
+    setState(() {
+      isAccept = value;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     setState(() {});
+    // Rtc
     RtcService.initVideoEngine(
         context: context,
         updateUid: (value) {
@@ -65,6 +73,18 @@ class _VideoCallPageState extends State<VideoCallPage>
         );
       },
     );
+    // Db
+    Channel.checkChannelProcess(
+      userId:
+          (widget.callType == CallType.caller) ? widget.yourId : widget.userId,
+      onFalse: () {
+        leaveChannel();
+        Navigator.pop(context);
+      },
+      onAccept: () {
+        updateIsAccept(true);
+      },
+    );
   }
 
   @override
@@ -77,8 +97,57 @@ class _VideoCallPageState extends State<VideoCallPage>
   void leaveChannel() {
     RtcService.leaveChannel().then((_) {
       RtcService.destroy();
-      Navigator.pop(context);
     });
+
+    // Update Db
+    Channel.dbService.updateCallingProcess(
+      userId:
+          (widget.callType == CallType.caller) ? widget.yourId : widget.userId,
+      value: "Left",
+    );
+    // For You
+    Channel.dbService.updateOnOtherCall(
+      userId: widget.yourId,
+      value: false,
+    );
+    // For User
+    Channel.dbService.updateOnOtherCall(
+      userId: widget.userId,
+      value: false,
+    );
+
+    // Update Call Db
+    Call.dbService.add(
+      userId: widget.yourId,
+      type: "Video",
+      answer: isAccept,
+      callerId: widget.userId,
+    );
+  }
+
+  void joinChannel(String token) {
+    RtcService.joinChannel(
+      channel:
+          (widget.callType == CallType.caller) ? widget.yourId : widget.userId,
+      token: token,
+      uid: remoteId,
+    );
+    // Update Db
+    Channel.dbService.updateCallingProcess(
+      userId:
+          (widget.callType == CallType.caller) ? widget.yourId : widget.userId,
+      value: (widget.callType == CallType.caller) ? "Calling" : "Accept",
+    );
+
+    if (widget.callType == CallType.caller) {
+      // Send Notification
+      NotificationService.sendNotification(
+        title: widget.yourId,
+        subject: "START VIDEO CALL",
+        topics: "from${widget.yourId}to${widget.userId}",
+        type: "Video Call",
+      );
+    }
   }
 
   @override
@@ -112,7 +181,7 @@ class _VideoCallPageState extends State<VideoCallPage>
     return WillPopScope(
       onWillPop: () async {
         leaveChannel();
-        return true;
+        return false;
       },
       child: Scaffold(
         body: SafeArea(

@@ -51,7 +51,7 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     // Update State
-    // NavigationCubitHandle.read(context).setNavigation(0);
+    NavigationCubitHandle.read(context).setNavigation(0);
 
     // Pages
     final pages = <Widget>[

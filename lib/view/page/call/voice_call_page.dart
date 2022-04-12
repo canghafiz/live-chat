@@ -24,6 +24,7 @@ class VoiceCallPage extends StatefulWidget {
 class _VoiceCallPageState extends State<VoiceCallPage>
     with WidgetsBindingObserver {
   int remoteId = 0;
+  bool isAccept = false;
 
   void udpateRemoteId(int value) {
     setState(() {
@@ -31,33 +32,50 @@ class _VoiceCallPageState extends State<VoiceCallPage>
     });
   }
 
+  void updateIsAccept(bool value) {
+    setState(() {
+      isAccept = value;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     setState(() {});
+    // Rtc
     RtcService.initVoiceEngine((value) {
       udpateRemoteId(value);
-    }).then((_) {
-      // Get Token
-      RtcApiService.getChannelToken(
-        channel: (widget.callType == CallType.caller)
-            ? widget.yourId
-            : widget.userId,
-        role: (widget.callType == CallType.caller) ? "publisher" : "audience",
-        uid: (widget.callType == CallType.caller) ? 0 : 1,
-      ).then((token) {
-        if (token != null) {
-          // Join
-          RtcService.joinChannel(
-            channel: (widget.callType == CallType.caller)
-                ? widget.yourId
-                : widget.userId,
-            token: token,
-            uid: remoteId,
-          );
-        }
-      });
-    });
+    }).then(
+      (_) {
+        // Get Token
+        RtcApiService.getChannelToken(
+          channel: (widget.callType == CallType.caller)
+              ? widget.yourId
+              : widget.userId,
+          role: (widget.callType == CallType.caller) ? "publisher" : "audience",
+          uid: (widget.callType == CallType.caller) ? 0 : 1,
+        ).then(
+          (token) {
+            if (token != null) {
+              // Join
+              joinChannel(token);
+            }
+          },
+        );
+      },
+    );
+    // Db
+    Channel.checkChannelProcess(
+      userId:
+          (widget.callType == CallType.caller) ? widget.yourId : widget.userId,
+      onFalse: () {
+        leaveChannel();
+        Navigator.pop(context);
+      },
+      onAccept: () {
+        updateIsAccept(true);
+      },
+    );
   }
 
   @override
@@ -70,8 +88,56 @@ class _VoiceCallPageState extends State<VoiceCallPage>
   void leaveChannel() {
     RtcService.leaveChannel().then((_) {
       RtcService.destroy();
-      Navigator.pop(context);
     });
+    // Update Db
+    Channel.dbService.updateCallingProcess(
+      userId:
+          (widget.callType == CallType.caller) ? widget.yourId : widget.userId,
+      value: "Left",
+    );
+    // For You
+    Channel.dbService.updateOnOtherCall(
+      userId: widget.yourId,
+      value: false,
+    );
+    // For User
+    Channel.dbService.updateOnOtherCall(
+      userId: widget.userId,
+      value: false,
+    );
+
+    // Update Call Db
+    Call.dbService.add(
+      userId: widget.yourId,
+      type: "Voice",
+      answer: isAccept,
+      callerId: widget.userId,
+    );
+  }
+
+  void joinChannel(String token) {
+    RtcService.joinChannel(
+      channel:
+          (widget.callType == CallType.caller) ? widget.yourId : widget.userId,
+      token: token,
+      uid: remoteId,
+    );
+    // Update Db
+    Channel.dbService.updateCallingProcess(
+      userId:
+          (widget.callType == CallType.caller) ? widget.yourId : widget.userId,
+      value: (widget.callType == CallType.caller) ? "Calling" : "Accept",
+    );
+
+    if (widget.callType == CallType.caller) {
+      // Send Notification
+      NotificationService.sendNotification(
+        title: widget.yourId,
+        subject: "START VOICE CALL",
+        topics: "from${widget.yourId}to${widget.userId}",
+        type: "Voice Call",
+      );
+    }
   }
 
   @override
@@ -92,7 +158,7 @@ class _VoiceCallPageState extends State<VoiceCallPage>
     return WillPopScope(
       onWillPop: () async {
         leaveChannel();
-        return true;
+        return false;
       },
       child: Scaffold(
         backgroundColor: ColorConfig.colorPrimary,

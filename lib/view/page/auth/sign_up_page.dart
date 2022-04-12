@@ -1,6 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:live_chat/model/export_model.dart';
+import 'package:live_chat/service/auth/auth_service.dart';
 import 'package:live_chat/utils/export_utils.dart';
 
 import '../../../cubit/export_cubit.dart';
@@ -160,7 +162,52 @@ class _SignUpPageState extends State<SignUpPage> {
             marginRight: 0,
             marginBottom: 24,
             onPress: () {
-              if (formKey.currentState!.validate()) {}
+              if (formKey.currentState!.validate()) {
+                AuthService.signUp(
+                        context: context,
+                        email: emailController.text,
+                        password: pwController.text)
+                    .then(
+                  (response) {
+                    if (response.user != null) {
+                      // Update User Db
+                      User.dbService.createUser(
+                        userId: response.user!.user!.uid,
+                        email: emailController.text,
+                        name: nameController.text,
+                      );
+
+                      // Show Dialog
+                      showDialog(
+                        context: context,
+                        builder: (context) => messageDialog(
+                          message: "Success create account",
+                          textColor: Colors.green,
+                          icon: const Icon(
+                            Icons.check,
+                            size: 36,
+                            color: Colors.green,
+                          ),
+                        ),
+                      );
+                    } else {
+                      // Show Dialog
+                      showDialog(
+                        context: context,
+                        builder: (context) => messageDialog(
+                          message: response.message!,
+                          textColor: Colors.red,
+                          icon: const Icon(
+                            Icons.clear,
+                            size: 36,
+                            color: Colors.red,
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                );
+              }
             },
             text: (state == BackEndStatus.doing) ? 'Loading...' : 'Create',
             fontColor: Colors.white,

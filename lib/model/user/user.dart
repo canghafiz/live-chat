@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:live_chat/model/export_model.dart';
 import 'package:live_chat/service/export_service.dart';
 import 'package:live_chat/utils/export_utils.dart';
 
@@ -21,6 +22,21 @@ class User {
   Map<String, dynamic>? channel;
 
   // Map
+  Map<String, dynamic> toMap({
+    required String email,
+    required String name,
+  }) {
+    return {
+      "channel": _channel.toMap(),
+      "contacts": [],
+      "email": email,
+      "groups": [],
+      "name": name,
+      "online": false,
+      "profile": null,
+    };
+  }
+
   factory User.fromMap(Map<String, dynamic> data) {
     return User(
       contacts: data['contacts'],
@@ -32,6 +48,9 @@ class User {
       channel: data['channel'],
     );
   }
+
+  // Private Object
+  final Channel _channel = Channel();
 
   // Db
   static final UserDbService _dbService = UserDbService();
@@ -148,6 +167,18 @@ class UserDbService {
     );
   }
 
+  Future<void> createUser({
+    required String userId,
+    required String email,
+    required String name,
+  }) async {
+    _dataManager.createUser(
+      userId: userId,
+      email: email,
+      name: name,
+    );
+  }
+
   Future<bool> updateName({
     required String userId,
     required String name,
@@ -211,6 +242,12 @@ class UserDbService {
 }
 
 abstract class UserDataManager {
+  FutureOr<void> createUser({
+    required String userId,
+    required String email,
+    required String name,
+  });
+
   FutureOr<void> updateOnlineStatus({
     required String userId,
     required bool value,
@@ -264,6 +301,8 @@ class UserFirebaseDb implements UserDataManager {
   }
 
   //  Process
+  final User _user = User();
+
   @override
   Future<bool> updateName({
     required String userId,
@@ -413,5 +452,17 @@ class UserFirebaseDb implements UserDataManager {
     required bool value,
   }) async {
     await FirebaseUtils.dbUser(userId).update({"online": value});
+  }
+
+  @override
+  Future<void> createUser({
+    required String userId,
+    required String email,
+    required String name,
+  }) async {
+    await FirebaseUtils.dbUser(userId).set(
+      _user.toMap(email: email, name: name),
+      SetOptions(merge: true),
+    );
   }
 }

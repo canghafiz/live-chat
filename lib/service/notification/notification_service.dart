@@ -8,6 +8,7 @@ import 'package:live_chat/main.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:live_chat/model/export_model.dart';
 import 'package:live_chat/utils/export_utils.dart';
+import 'package:live_chat/view/export_view.dart';
 
 class NotificationService {
   static final _authorization =
@@ -42,31 +43,53 @@ class NotificationService {
           _notifSetting(
             context: context,
             notifPlugin: flutterLocalNotificationsPlugin,
-            message: notification.body!,
+            type: message.data['type'],
             yourId: yourId,
+            userId: (message.data['type'] != "Group Chat")
+                ? notification.title!
+                : null,
+            groupId: (message.data['type'] == "Group Chat")
+                ? notification.title!
+                : null,
           );
           // Define Data From Db
-          FirebaseUtils.dbUser(notification.title!).get().then(
-            (doc) {
-              // Object
-              final User user =
-                  User.fromMap(doc.data() as Map<String, dynamic>);
+          if (message.data['type'] != "Group Chat") {
+            FirebaseUtils.dbUser(notification.title!).get().then(
+              (doc) {
+                // Object
+                final User user =
+                    User.fromMap(doc.data() as Map<String, dynamic>);
 
-              // Notif structure
-              if (message.data["type"] == "Video Call" ||
-                  message.data["type"] == "Voice Call") {
-                _callNotifStructure(notification: notification, user: user);
-              } else {
-                _messageNotifStructure(notification: notification, user: user);
-              }
-            },
-          );
+                // Notif structure
+                if (message.data["type"] == "Video Call" ||
+                    message.data["type"] == "Voice Call") {
+                  _callNotifStructure(notification: notification, user: user);
+                } else {
+                  _personalMessageNotifStructure(
+                      notification: notification, user: user);
+                }
+              },
+            );
+          } else {
+            FirebaseUtils.dbGroup(notification.title!).get().then(
+              (doc) {
+                // Object
+                final Group group =
+                    Group.fromMap(doc.data() as Map<String, dynamic>);
+
+                _groupMessageNotifStructure(
+                  notification: notification,
+                  group: group,
+                );
+              },
+            );
+          }
         }
       },
     );
   }
 
-  static void _messageNotifStructure({
+  static void _personalMessageNotifStructure({
     required RemoteNotification notification,
     required User user,
   }) {
@@ -90,30 +113,52 @@ class NotificationService {
     );
   }
 
-  static void _callNotifStructure({
+  static void _groupMessageNotifStructure({
     required RemoteNotification notification,
-    required User user,
+    required Group group,
   }) {
-    const sound = "call_notification.wav";
     flutterLocalNotificationsPlugin.show(
       notification.hashCode,
-      user.name,
+      group.name,
       notification.body,
       NotificationDetails(
         android: AndroidNotificationDetails(
           channel.id,
           channel.name,
           groupKey: channel.groupId,
+          playSound: true,
           icon: "@mipmap/ic_launcher",
           setAsGroupSummary: true,
           priority: Priority.high,
           importance: Importance.max,
-          playSound: false,
-          sound: RawResourceAndroidNotificationSound(sound.split(".").first),
         ),
-        iOS: const IOSNotificationDetails(
-          sound: sound,
-          presentSound: false,
+        iOS: const IOSNotificationDetails(),
+      ),
+    );
+  }
+
+  static void _callNotifStructure({
+    required RemoteNotification notification,
+    required User user,
+  }) {
+    flutterLocalNotificationsPlugin.show(
+      notification.hashCode,
+      user.name,
+      notification.body,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          "channel id 0",
+          "channel name",
+          icon: "@mipmap/ic_launcher",
+          priority: Priority.high,
+          importance: Importance.max,
+          sound: RawResourceAndroidNotificationSound(
+            VariableConst.notificationSound,
+          ),
+        ),
+        iOS: IOSNotificationDetails(
+          sound: VariableConst.notificationSound,
+          presentSound: true,
         ),
       ),
     );
@@ -122,7 +167,9 @@ class NotificationService {
   static void _notifSetting({
     required FlutterLocalNotificationsPlugin notifPlugin,
     required String yourId,
-    required String message,
+    required String type,
+    required String? userId,
+    required String? groupId,
     required BuildContext context,
   }) {
     var android = const AndroidInitializationSettings("@mipmap/ic_launcher");
@@ -131,20 +178,47 @@ class NotificationService {
     notifPlugin.initialize(
       InitializationSettings(android: android, iOS: ios),
       onSelectNotification: (_) async {
-        // if (message.contains("follow") ||
-        //     message.contains("like") ||
-        //     message.contains("live")) {
-        //   // Notif Page
-        //   bottomBloc.add(const SetBottomNavigation(2));
-        // } else {
-        //   // Chat
-        //   navigatorKey.currentState!.push(
-        //     navigatorTo(
-        //       context: context,
-        //       screen: ChatListPage(yourId: yourId),
-        //     ),
-        //   );
-        // }
+        if (type == "Video Call" || type == "Voice Call") {
+          if (type == "Video Call") {
+            navigatorKey.currentState!.push(
+              RouteHandle.goToPage(
+                VideoCallPage(
+                  callType: CallType.receiver,
+                  userId: userId!,
+                  yourId: yourId,
+                ),
+              ),
+            );
+          } else {
+            navigatorKey.currentState!.push(
+              RouteHandle.goToPage(
+                VoiceCallPage(
+                  callType: CallType.receiver,
+                  userId: userId!,
+                  yourId: yourId,
+                ),
+              ),
+            );
+          }
+        } else if (type == "Personal Chat") {
+          navigatorKey.currentState!.push(
+            RouteHandle.goToPage(
+              DetailPersonalChatPage(
+                userId: userId!,
+                yourId: yourId,
+              ),
+            ),
+          );
+        } else {
+          navigatorKey.currentState!.push(
+            RouteHandle.goToPage(
+              DetailGroupChatPage(
+                groupId: groupId!,
+                yourId: yourId,
+              ),
+            ),
+          );
+        }
       },
     );
   }

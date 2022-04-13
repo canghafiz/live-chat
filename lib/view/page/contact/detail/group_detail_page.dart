@@ -154,10 +154,10 @@ class GroupDetailPage extends StatelessWidget {
                                                         groupId: groupId,
                                                         url: null,
                                                       );
+
+                                                      Navigator.pop(context);
                                                     },
                                                   );
-
-                                                  Navigator.pop(context);
                                                 },
                                                 dbUpdate: (value) {
                                                   if (group.profile != null) {
@@ -192,6 +192,8 @@ class GroupDetailPage extends StatelessWidget {
                                                             url: url,
                                                           ),
                                                         );
+
+                                                        Navigator.pop(context);
                                                       },
                                                     );
                                                     return;

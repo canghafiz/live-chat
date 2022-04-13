@@ -18,10 +18,10 @@ class FunctionUtils {
   ) {
     var convert = DateTime.parse(time);
     var now =
-        DateTime.parse(DateFormat("yyyy-MM-dd hh:mm").format(DateTime.now()));
+        DateTime.parse(DateFormat("yyyy-MM-dd HH:mm").format(DateTime.now()));
 
     if (now.difference(convert).inDays < 7) {
-      return Jiffy(time, "yyyy-MM-dd hh:mm").fromNow();
+      return Jiffy(time, "yyyy-MM-dd HH:mm").fromNow();
     }
 
     return Jiffy(time).yMMMEd;
@@ -30,7 +30,7 @@ class FunctionUtils {
   static String chatTimeCalculate(String time) {
     var convert = DateTime.parse(time);
     var now =
-        DateTime.parse(DateFormat("yyyy-MM-dd hh:mm").format(DateTime.now()));
+        DateTime.parse(DateFormat("yyyy-MM-dd HH:mm").format(DateTime.now()));
 
     if (now.difference(convert).inDays == 0) {
       return "Today";

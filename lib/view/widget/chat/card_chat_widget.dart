@@ -33,6 +33,25 @@ class CardChatWidget extends StatelessWidget {
               return BlocSelector<ThemeCubit, ThemeState, bool>(
                 selector: (state) => state.isDark,
                 builder: (context, isDark) => ListTile(
+                  onLongPress: () {
+                    if (userId != null) {
+                      // Show Dialog
+                      showDialog(
+                        context: context,
+                        builder: (context) => deleteDialog(
+                          () {
+                            // Update Chat Db
+                            VariableConst.personalChatDbService.deleteChat(
+                              yourId: yourId,
+                              userId: userId!,
+                            );
+
+                            Navigator.pop(context);
+                          },
+                        ),
+                      );
+                    }
+                  },
                   onTap: () {
                     // Navigate
                     RouteHandle.toDetailPersonalChat(

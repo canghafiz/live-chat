@@ -34,6 +34,7 @@ class AddMemberPage extends StatelessWidget {
               }
 
               Navigator.pop(context);
+              return;
             }
 
             // Show Snackbar

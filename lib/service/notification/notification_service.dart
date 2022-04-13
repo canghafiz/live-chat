@@ -11,7 +11,7 @@ import 'package:live_chat/utils/export_utils.dart';
 import 'package:live_chat/view/export_view.dart';
 
 class NotificationService {
-  static final _authorization =
+  static final _serverKey =
       dotenv.get('FIREBASE_API_KEY', fallback: 'FIREBASE_API_KEY not found');
 
   static void subscribeTopic(String value) {
@@ -248,7 +248,7 @@ class NotificationService {
 
     final headers = {
       'content-type': 'application/json',
-      'Authorization': _authorization
+      'Authorization': "key=$_serverKey",
     };
 
     final response = await http.post(Uri.tryParse(postUrl)!,

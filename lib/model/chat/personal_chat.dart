@@ -323,9 +323,21 @@ class PersonalChatDbService {
       from: from,
     );
   }
+
+  Future<void> deleteChat({
+    required String yourId,
+    required String userId,
+  }) async {
+    _dataManager.deleteChat(yourId: yourId, userId: userId);
+  }
 }
 
 abstract class PersonalChatDataManager {
+  FutureOr<void> deleteChat({
+    required String yourId,
+    required String userId,
+  });
+
   FutureOr<void> updateChats({
     required String yourId,
     required String userId,
@@ -483,5 +495,13 @@ class PersonalChatFirebaseDb implements PersonalChatDataManager {
       },
       SetOptions(merge: true),
     );
+  }
+
+  @override
+  Future<void> deleteChat({
+    required String yourId,
+    required String userId,
+  }) async {
+    await FirebaseUtils.dbChat(yourId).doc(userId).delete();
   }
 }

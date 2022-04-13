@@ -433,80 +433,127 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                       ),
                                     ),
                             ),
-                            (audioState.status == AudioChatStatus.record)
-                                ? circularButton(
-                                    size: 40,
-                                    icon: Icons.stop,
-                                    onTap: () async {
-                                      RecordService.stop(context);
+                            (audioState.status == AudioChatStatus.sending)
+                                ? const CircularProgressIndicator()
+                                : (audioState.status == AudioChatStatus.record)
+                                    ? circularButton(
+                                        size: 40,
+                                        icon: Icons.stop,
+                                        onTap: () async {
+                                          RecordService.stop(context);
 
-                                      // Player
-                                      FunctionUtils.recorderFilePath().then(
-                                        (path) {
-                                          if (File(path).existsSync()) {
-                                            _player.initAudioPlayerFromMemory(
-                                              path,
-                                            );
-                                          }
+                                          // Player
+                                          FunctionUtils.recorderFilePath().then(
+                                            (path) {
+                                              if (File(path).existsSync()) {
+                                                _player
+                                                    .initAudioPlayerFromMemory(
+                                                  path,
+                                                );
+                                              }
+                                            },
+                                          );
+
+                                          // Update State
+                                          timerService.reset();
                                         },
-                                      );
-
-                                      // Update State
-                                      timerService.reset();
-                                    },
-                                  )
-                                : circularButton(
-                                    size: 40,
-                                    icon: Icons.send,
-                                    onTap: () {
-                                      FunctionUtils.recorderFilePath().then(
-                                        (path) {
-                                          if (File(path).existsSync()) {
-                                            //  Update Storage
-                                            FirebaseStorageService.uploadAudio(
-                                              folderName: VariableConst
-                                                  .audioChatStorage,
-                                              fileName: basename(path),
-                                              file: File(path),
-                                            ).then(
-                                              (url) {
-                                                if (widget.userId != null) {
-                                                  // For Personal
-                                                  // Update Chat Db
-                                                  VariableConst
-                                                      .personalChatDbService
-                                                      .sendChat(
-                                                    sendChat: () {
-                                                      // For You
+                                      )
+                                    : circularButton(
+                                        size: 40,
+                                        icon: Icons.send,
+                                        onTap: () {
+                                          FunctionUtils.recorderFilePath().then(
+                                            (path) {
+                                              if (File(path).existsSync()) {
+                                                // Update State
+                                                ChatCubitHandle.read(context)
+                                                    .setAudio(AudioChatStatus
+                                                        .sending);
+                                                //  Update Storage
+                                                FirebaseStorageService
+                                                    .uploadAudio(
+                                                  folderName: VariableConst
+                                                      .audioChatStorage,
+                                                  fileName: basename(path),
+                                                  file: File(path),
+                                                ).then(
+                                                  (url) {
+                                                    if (widget.userId != null) {
+                                                      // For Personal
+                                                      // Update Chat Db
                                                       VariableConst
                                                           .personalChatDbService
-                                                          .sendAudio(
+                                                          .sendChat(
+                                                        sendChat: () {
+                                                          // For You
+                                                          VariableConst
+                                                              .personalChatDbService
+                                                              .sendAudio(
+                                                            yourId:
+                                                                widget.yourId,
+                                                            userId:
+                                                                widget.userId!,
+                                                            date: VariableConst
+                                                                .timeYearMonthDay
+                                                                .call()
+                                                                .toString(),
+                                                            url: url,
+                                                            from: widget.yourId,
+                                                          );
+
+                                                          // For User
+                                                          VariableConst
+                                                              .personalChatDbService
+                                                              .sendAudio(
+                                                            yourId:
+                                                                widget.userId!,
+                                                            userId:
+                                                                widget.yourId,
+                                                            date: VariableConst
+                                                                .timeYearMonthDay
+                                                                .call()
+                                                                .toString(),
+                                                            url: url,
+                                                            from: widget.yourId,
+                                                          );
+
+                                                          // Send Notification
+                                                          sendPersonalNotification(
+                                                            "AUDIO",
+                                                          );
+
+                                                          // Update State
+                                                          ChatCubitHandle.read(
+                                                                  context)
+                                                              .setTextfield(
+                                                                  true);
+                                                        },
                                                         yourId: widget.yourId,
                                                         userId: widget.userId!,
-                                                        date: VariableConst
-                                                            .timeYearMonthDay
-                                                            .call()
-                                                            .toString(),
-                                                        url: url,
-                                                        from: widget.yourId,
                                                       );
-
-                                                      // For User
+                                                    } else {
+                                                      // For Group
+                                                      // Update Chat Db
                                                       VariableConst
-                                                          .personalChatDbService
-                                                          .sendAudio(
-                                                        yourId: widget.userId!,
-                                                        userId: widget.yourId,
-                                                        date: VariableConst
-                                                            .timeYearMonthDay
-                                                            .call()
-                                                            .toString(),
-                                                        url: url,
-                                                        from: widget.yourId,
+                                                          .groupChatDbService
+                                                          .sendChat(
+                                                        groupId:
+                                                            widget.groupId!,
+                                                        sendChat: (value) {
+                                                          VariableConst
+                                                              .groupChatDbService
+                                                              .sendAudio(
+                                                            groupId:
+                                                                widget.groupId!,
+                                                            chatId: value,
+                                                            from: widget.yourId,
+                                                            url: url,
+                                                          );
+                                                        },
                                                       );
 
                                                       // Send Notification
-                                                      sendPersonalNotification(
+                                                      sendGroupNotification(
                                                         "AUDIO",
                                                       );
 
@@ -514,46 +561,18 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                                       ChatCubitHandle.read(
                                                               context)
                                                           .setTextfield(true);
-                                                    },
-                                                    yourId: widget.yourId,
-                                                    userId: widget.userId!,
-                                                  );
-                                                } else {
-                                                  // For Group
-                                                  // Update Chat Db
-                                                  VariableConst
-                                                      .groupChatDbService
-                                                      .sendChat(
-                                                    groupId: widget.groupId!,
-                                                    sendChat: (value) {
-                                                      VariableConst
-                                                          .groupChatDbService
-                                                          .sendAudio(
-                                                        groupId:
-                                                            widget.groupId!,
-                                                        chatId: value,
-                                                        from: widget.yourId,
-                                                        url: url,
-                                                      );
-                                                    },
-                                                  );
-
-                                                  // Send Notification
-                                                  sendGroupNotification(
-                                                    "AUDIO",
-                                                  );
-
-                                                  // Update State
-                                                  ChatCubitHandle.read(context)
-                                                      .setTextfield(true);
-                                                }
-                                              },
-                                            );
-                                          }
+                                                    }
+                                                    // Update State
+                                                    ChatCubitHandle.read(
+                                                            context)
+                                                        .setTextfield(true);
+                                                  },
+                                                );
+                                              }
+                                            },
+                                          );
                                         },
-                                      );
-                                    },
-                                  ),
+                                      ),
                           ],
                         );
                 },

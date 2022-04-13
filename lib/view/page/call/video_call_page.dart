@@ -25,76 +25,105 @@ class VideoCallPage extends StatefulWidget {
 
 class _VideoCallPageState extends State<VideoCallPage>
     with WidgetsBindingObserver {
-  int remoteId = 0;
+  int remoteId = 0, totalLeave = 0;
   bool isAccept = false;
 
   void udpateRemoteId(int value) {
-    setState(() {
-      remoteId = value;
-    });
+    if (mounted) {
+      setState(() {
+        remoteId = value;
+      });
+    }
+  }
+
+  void updateTotalLeave() {
+    if (mounted) {
+      setState(() {
+        totalLeave++;
+      });
+    }
   }
 
   void updateIsAccept(bool value) {
-    setState(() {
-      isAccept = value;
-    });
+    if (mounted) {
+      setState(() {
+        isAccept = value;
+      });
+    }
   }
 
   @override
   void initState() {
     super.initState();
-    setState(() {});
-    // Rtc
-    RtcService.initVideoEngine(
-        context: context,
-        updateUid: (value) {
-          udpateRemoteId(value);
-        }).then(
-      (_) {
-        // Get Token
-        RtcApiService.getChannelToken(
-          channel: (widget.callType == CallType.caller)
-              ? widget.yourId
-              : widget.userId,
-          role: (widget.callType == CallType.caller) ? "publisher" : "audience",
-          uid: (widget.callType == CallType.caller) ? 0 : 1,
-        ).then(
-          (token) {
-            if (token != null) {
-              // Join
-              RtcService.joinChannel(
-                  channel: (widget.callType == CallType.caller)
-                      ? widget.yourId
-                      : widget.userId,
-                  token: token,
-                  uid: remoteId);
-            }
+    if (mounted) {
+      setState(() {
+        // Rtc
+        RtcService.initVideoEngine(
+            context: context,
+            updateUid: (value) {
+              udpateRemoteId(value);
+            }).then(
+          (_) {
+            // Get Token
+            RtcApiService.getChannelToken(
+              channel: (widget.callType == CallType.caller)
+                  ? widget.yourId
+                  : widget.userId,
+              role: (widget.callType == CallType.caller)
+                  ? "publisher"
+                  : "audience",
+              uid: (widget.callType == CallType.caller) ? 0 : 1,
+            ).then(
+              (token) {
+                if (token != null) {
+                  // Join
+                  RtcService.joinChannel(
+                    channel: (widget.callType == CallType.caller)
+                        ? widget.yourId
+                        : widget.userId,
+                    token: token,
+                    uid: remoteId,
+                  );
+
+                  if (widget.callType == CallType.caller) {
+                    // Send Notification
+                    NotificationService.sendNotification(
+                      title: widget.yourId,
+                      subject: "START VIDEO CALL",
+                      topics: "from${widget.yourId}to${widget.userId}",
+                      type: "Video Call",
+                    );
+                  }
+                }
+              },
+            );
           },
         );
-      },
-    );
-    // Db
-    Channel.checkChannelProcess(
-      userId:
-          (widget.callType == CallType.caller) ? widget.yourId : widget.userId,
-      onFalse: () {
-        leaveChannel();
-        Navigator.pop(context);
-      },
-      onAccept: () {
-        updateIsAccept(true);
-      },
-    );
+        // Db
+        Channel.checkChannelProcess(
+          userId: (widget.callType == CallType.caller)
+              ? widget.yourId
+              : widget.userId,
+          onFalse: () {
+            leaveChannel().then((_) => Navigator.pop(context));
+          },
+          onAccept: () {
+            updateIsAccept(true);
+          },
+        );
+      });
+    }
   }
 
   @override
-  void dispose() {
-    super.dispose();
-    // Destroy
-    RtcService.destroy();
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.inactive) {
+      // Leave Channel
+      leaveChannel();
+    }
   }
 
-  void leaveChannel() {
+  Future<void> leaveChannel() async {
     RtcService.leaveChannel().then((_) {
       RtcService.destroy();
     });
@@ -116,13 +145,17 @@ class _VideoCallPageState extends State<VideoCallPage>
       value: false,
     );
 
-    // Update Call Db
-    Call.dbService.add(
-      userId: widget.yourId,
-      type: "Video",
-      answer: isAccept,
-      callerId: widget.userId,
-    );
+    updateTotalLeave();
+
+    if (totalLeave <= 1) {
+      // Update Call Db
+      Call.dbService.add(
+        userId: widget.yourId,
+        type: "Video",
+        answer: isAccept,
+        callerId: widget.userId,
+      );
+    }
   }
 
   void joinChannel(String token) {
@@ -138,16 +171,6 @@ class _VideoCallPageState extends State<VideoCallPage>
           (widget.callType == CallType.caller) ? widget.yourId : widget.userId,
       value: (widget.callType == CallType.caller) ? "Calling" : "Accept",
     );
-
-    if (widget.callType == CallType.caller) {
-      // Send Notification
-      NotificationService.sendNotification(
-        title: widget.yourId,
-        subject: "START VIDEO CALL",
-        topics: "from${widget.yourId}to${widget.userId}",
-        type: "Video Call",
-      );
-    }
   }
 
   @override
@@ -396,7 +419,7 @@ class _VideoCallPageState extends State<VideoCallPage>
                               ),
                               // Call
                               GestureDetector(
-                                onTap: () {
+                                onTap: () async {
                                   leaveChannel();
                                 },
                                 child: Container(

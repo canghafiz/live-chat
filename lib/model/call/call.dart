@@ -62,21 +62,38 @@ class CallDbService {
     required bool answer,
     required String callerId,
   }) async {
-    // For You
-    _dataManager.add(
-      userId: userId,
-      type: type,
-      answer: answer,
-      callerId: callerId,
-    );
+    if (answer) {
+      // For You
+      _dataManager.add(
+        userId: userId,
+        type: type,
+        answer: answer,
+        callerId: callerId,
+      );
+    } else {
+      // For You
+      _dataManager.add(
+        userId: userId,
+        type: type,
+        answer: answer,
+        callerId: callerId,
+      );
 
-    // For User
-    _dataManager.add(
-      userId: callerId,
-      type: type,
-      answer: answer,
-      callerId: userId,
-    );
+      // For User
+      _dataManager.add(
+        userId: callerId,
+        type: type,
+        answer: answer,
+        callerId: userId,
+      );
+    }
+  }
+
+  Future<void> deleteCall({
+    required String userId,
+    required String callId,
+  }) async {
+    _dataManager.deleteCall(userId: userId, callId: callId);
   }
 }
 
@@ -86,6 +103,10 @@ abstract class CallDataManager {
     required String type,
     required bool answer,
     required String callerId,
+  });
+  FutureOr<void> deleteCall({
+    required String userId,
+    required String callId,
   });
 }
 
@@ -116,5 +137,13 @@ class CallFirebaseDb implements CallDataManager {
         answer: answer,
       ),
     );
+  }
+
+  @override
+  Future<void> deleteCall({
+    required String userId,
+    required String callId,
+  }) async {
+    await FirebaseUtils.dbCalls(userId).doc(callId).delete();
   }
 }

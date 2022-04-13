@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:live_chat/utils/config/font.dart';
+import 'package:live_chat/utils/export_utils.dart';
 
 Widget messageDialog({
   required String message,
@@ -47,6 +47,20 @@ Widget justDialog(Widget content) {
         vertical: 24,
       ),
       child: content,
+    ),
+  );
+}
+
+Widget deleteDialog(Function onDelete) {
+  return Dialog(
+    backgroundColor: Colors.transparent,
+    child: ElevatedButton(
+      onPressed: () => onDelete(),
+      child: const Text("Delete"),
+      style: ElevatedButton.styleFrom(
+        onPrimary: Colors.white,
+        primary: ColorConfig.colorPrimary,
+      ),
     ),
   );
 }

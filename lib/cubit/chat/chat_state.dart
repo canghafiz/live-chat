@@ -3,7 +3,7 @@ part of 'chat_cubit.dart';
 @immutable
 abstract class ChatState {}
 
-enum AudioChatStatus { record, done }
+enum AudioChatStatus { record, done, sending }
 
 class ChatInitial extends ChatState {}
 

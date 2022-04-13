@@ -31,6 +31,20 @@ class CardCallWidget extends StatelessWidget {
               User.fromMap(snapshot.data!.data() as Map<String, dynamic>);
 
           return ListTile(
+            onLongPress: () {
+              // Show Dialog
+              showDialog(
+                context: context,
+                builder: (context) => deleteDialog(
+                  () {
+                    // Update Call Db
+                    Call.dbService.deleteCall(userId: yourId, callId: callId);
+
+                    Navigator.pop(context);
+                  },
+                ),
+              );
+            },
             onTap: () {
               // Navigate
               RouteHandle.toDetailCall(

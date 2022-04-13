@@ -192,8 +192,6 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
                                                 sendPersonalNotification(
                                                   "IMAGE",
                                                 );
-
-                                                Navigator.pop(context);
                                               },
                                               yourId: widget.yourId,
                                               userId: widget.userId!,
@@ -215,11 +213,10 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
 
                                                 // Send Notification
                                                 sendGroupNotification("IMAGE");
-
-                                                Navigator.pop(context);
                                               },
                                             );
                                           }
+                                          Navigator.pop(context);
                                         },
                                       );
                                     },

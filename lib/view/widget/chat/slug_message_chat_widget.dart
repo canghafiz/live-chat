@@ -87,9 +87,7 @@ class _SlugMessageChatWidgetState extends State<SlugMessageChatWidget> {
                   return Text(
                     _message,
                     style: (_isRead)
-                        ? FontConfig.light(
-                            size: 10,
-                            color: const Color.fromARGB(255, 37, 36, 36))
+                        ? FontConfig.light(size: 10, color: Colors.grey)
                         : FontConfig.bold(size: 10, color: Colors.grey),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

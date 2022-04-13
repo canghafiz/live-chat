@@ -18,6 +18,13 @@ class DetailGroupChatPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    void addMember() {
+      // Update Group Db
+      Group.dbService.addMember(groupId: groupId, userId: yourId);
+      // Update User Db
+      User.dbService.joinGroup(yourId: yourId, groupId: groupId);
+    }
+
     return WillPopScope(
       onWillPop: () async {
         // Update Token
@@ -106,7 +113,9 @@ class DetailGroupChatPage extends StatelessWidget {
                 child: (!youAreMember)
                     ? Center(
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            addMember();
+                          },
                           child: Text(
                             "Join",
                             style: FontConfig.medium(

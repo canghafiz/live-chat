@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:live_chat/service/auth/auth_service.dart';
 import 'package:live_chat/utils/export_utils.dart';
 
 class PasswordPage extends StatefulWidget {
@@ -139,7 +140,22 @@ class _PasswordPageState extends State<PasswordPage> {
                       marginRight: 0,
                       marginBottom: 0,
                       onPress: () {
-                        if (formKey.currentState!.validate()) {}
+                        if (formKey.currentState!.validate()) {
+                          AuthService.changePassword(emailController.text).then(
+                            (success) {
+                              if (success) {
+                                // Show Snackbar
+                                showCustomSnackbar(
+                                  context: context,
+                                  text:
+                                      "The password reset link has been sent to email ${emailController.text}",
+                                  color: ColorConfig.colorPrimary,
+                                  duration: 5,
+                                );
+                              }
+                            },
+                          );
+                        }
                       },
                       text: 'Send',
                       fontColor: Colors.white,

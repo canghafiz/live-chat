@@ -53,6 +53,8 @@ class _VoiceCallPageState extends State<VoiceCallPage>
   @override
   void initState() {
     super.initState();
+    // Life Cycle
+    WidgetsBinding.instance!.addObserver(this);
     if (mounted) {
       setState(() {
         // Rtc
@@ -75,12 +77,20 @@ class _VoiceCallPageState extends State<VoiceCallPage>
                   // Join
                   joinChannel(token);
                   if (widget.callType == CallType.caller) {
-                    // Send Notification
-                    NotificationService.sendNotification(
-                      title: widget.yourId,
-                      subject: "START VOICE CALL",
-                      topics: "from${widget.yourId}to${widget.userId}",
-                      type: "Voice Call",
+                    FirebaseUtils.dbUser(widget.yourId).get().then(
+                      (doc) {
+                        // Object
+                        final User user =
+                            User.fromMap(doc.data() as Map<String, dynamic>);
+
+                        NotificationService.sendNotification(
+                          title: user.name!,
+                          subject: "START VOICE CALL",
+                          topics: "from${widget.yourId}to${widget.userId}",
+                          type: "Voice Call",
+                          id: widget.yourId,
+                        );
+                      },
                     );
                   }
                 }
@@ -106,7 +116,7 @@ class _VoiceCallPageState extends State<VoiceCallPage>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.detached) {
       // Leave Channel
       leaveChannel();
     }

@@ -27,6 +27,8 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
       context: context,
       yourId: widget.userId,
     );
+    // Life Cycle
+    WidgetsBinding.instance!.addObserver(this);
   }
 
   @override
@@ -39,6 +41,10 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.inactive) {
+      // Update User Db
+      User.dbService.updateOnlineStatus(userId: widget.userId, value: false);
+    }
+    if (state == AppLifecycleState.paused) {
       // Update User Db
       User.dbService.updateOnlineStatus(userId: widget.userId, value: false);
     }

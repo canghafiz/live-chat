@@ -33,20 +33,36 @@ class _TextfieldChatWidgetState extends State<TextfieldChatWidget>
   TextEditingController controller = TextEditingController();
 
   void sendPersonalNotification(String message) {
-    NotificationService.sendNotification(
-      title: widget.yourId,
-      subject: message,
-      topics: "from${widget.yourId}to${widget.userId}",
-      type: "Personal Chat",
+    FirebaseUtils.dbUser(widget.yourId).get().then(
+      (doc) {
+        // Object
+        final User user = User.fromMap(doc.data() as Map<String, dynamic>);
+
+        NotificationService.sendNotification(
+          title: user.name!,
+          subject: message,
+          topics: "from${widget.yourId}to${widget.userId}",
+          type: "Personal Chat",
+          id: widget.yourId,
+        );
+      },
     );
   }
 
   void sendGroupNotification(String message) {
-    NotificationService.sendNotification(
-      title: widget.yourId,
-      subject: message,
-      topics: widget.groupId!,
-      type: "Group Chat",
+    FirebaseUtils.dbGroup(widget.groupId!).get().then(
+      (doc) {
+        // Object
+        final Group group = Group.fromMap(doc.data() as Map<String, dynamic>);
+
+        NotificationService.sendNotification(
+          title: group.name!,
+          subject: message,
+          topics: widget.groupId!,
+          type: "Group Chat",
+          id: widget.groupId!,
+        );
+      },
     );
   }
 

@@ -55,6 +55,8 @@ class _VideoCallPageState extends State<VideoCallPage>
   @override
   void initState() {
     super.initState();
+    // Life Cycle
+    WidgetsBinding.instance!.addObserver(this);
     if (mounted) {
       setState(() {
         // Rtc
@@ -87,11 +89,20 @@ class _VideoCallPageState extends State<VideoCallPage>
 
                   if (widget.callType == CallType.caller) {
                     // Send Notification
-                    NotificationService.sendNotification(
-                      title: widget.yourId,
-                      subject: "START VIDEO CALL",
-                      topics: "from${widget.yourId}to${widget.userId}",
-                      type: "Video Call",
+                    FirebaseUtils.dbUser(widget.yourId).get().then(
+                      (doc) {
+                        // Object
+                        final User user =
+                            User.fromMap(doc.data() as Map<String, dynamic>);
+
+                        NotificationService.sendNotification(
+                          title: user.name!,
+                          subject: "START VIDEO CALL",
+                          topics: "from${widget.yourId}to${widget.userId}",
+                          type: "Video Call",
+                          id: widget.yourId,
+                        );
+                      },
                     );
                   }
                 }
@@ -117,7 +128,7 @@ class _VideoCallPageState extends State<VideoCallPage>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.detached) {
       // Leave Channel
       leaveChannel();
     }

@@ -5,14 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:live_chat/main.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:live_chat/model/export_model.dart';
 import 'package:live_chat/utils/export_utils.dart';
 import 'package:live_chat/view/export_view.dart';
 
 class NotificationService {
-  static final _serverKey =
-      dotenv.get('FIREBASE_API_KEY', fallback: 'FIREBASE_API_KEY not found');
+  static const _serverKey =
+      "AAAA-WewheU:APA91bF_1xASwJWNli-biv24Pzt0XbcuuTg7exJOHgHgD3bBjA5bCeEi9uo2K3lg1XQOBojhH-KtVy1hloKu43YxhBouulksb0PbvsDlPaX9h3vWotAzSei5LqQ-ggdjRS6J9GCVQN9E";
 
   static void subscribeTopic(String value) {
     FirebaseUtils.messaging.subscribeToTopic(value);
@@ -46,56 +44,30 @@ class NotificationService {
             type: message.data['type'],
             yourId: yourId,
             userId: (message.data['type'] != "Group Chat")
-                ? notification.title!
+                ? message.data['id']
                 : null,
             groupId: (message.data['type'] == "Group Chat")
-                ? notification.title!
+                ? message.data['id']
                 : null,
           );
           // Define Data From Db
-          if (message.data['type'] != "Group Chat") {
-            FirebaseUtils.dbUser(notification.title!).get().then(
-              (doc) {
-                // Object
-                final User user =
-                    User.fromMap(doc.data() as Map<String, dynamic>);
-
-                // Notif structure
-                if (message.data["type"] == "Video Call" ||
-                    message.data["type"] == "Voice Call") {
-                  _callNotifStructure(notification: notification, user: user);
-                } else {
-                  _personalMessageNotifStructure(
-                      notification: notification, user: user);
-                }
-              },
-            );
+          if (message.data["type"] == "Video Call" ||
+              message.data["type"] == "Voice Call") {
+            _callNotifStructure(notification);
           } else {
-            FirebaseUtils.dbGroup(notification.title!).get().then(
-              (doc) {
-                // Object
-                final Group group =
-                    Group.fromMap(doc.data() as Map<String, dynamic>);
-
-                _groupMessageNotifStructure(
-                  notification: notification,
-                  group: group,
-                );
-              },
-            );
+            _personalMessageNotifStructure(notification);
           }
         }
       },
     );
   }
 
-  static void _personalMessageNotifStructure({
-    required RemoteNotification notification,
-    required User user,
-  }) {
+  static void _personalMessageNotifStructure(
+    RemoteNotification notification,
+  ) {
     flutterLocalNotificationsPlugin.show(
       notification.hashCode,
-      user.name,
+      notification.title,
       notification.body,
       NotificationDetails(
         android: AndroidNotificationDetails(
@@ -113,37 +85,12 @@ class NotificationService {
     );
   }
 
-  static void _groupMessageNotifStructure({
-    required RemoteNotification notification,
-    required Group group,
-  }) {
+  static void _callNotifStructure(
+    RemoteNotification notification,
+  ) {
     flutterLocalNotificationsPlugin.show(
       notification.hashCode,
-      group.name,
-      notification.body,
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          channel.id,
-          channel.name,
-          groupKey: channel.groupId,
-          playSound: true,
-          icon: "@mipmap/ic_launcher",
-          setAsGroupSummary: true,
-          priority: Priority.high,
-          importance: Importance.max,
-        ),
-        iOS: const IOSNotificationDetails(),
-      ),
-    );
-  }
-
-  static void _callNotifStructure({
-    required RemoteNotification notification,
-    required User user,
-  }) {
-    flutterLocalNotificationsPlugin.show(
-      notification.hashCode,
-      user.name,
+      notification.title,
       notification.body,
       const NotificationDetails(
         android: AndroidNotificationDetails(
@@ -228,6 +175,7 @@ class NotificationService {
     required String subject,
     required String topics,
     required String type,
+    required String id,
   }) async {
     var postUrl = 'https://fcm.googleapis.com/fcm/send';
 
@@ -242,6 +190,7 @@ class NotificationService {
         "sound": 'default',
         "screen": topics,
         "type": type,
+        "id": id,
       },
       "to": toParams,
     };

@@ -15,6 +15,7 @@ class AuthPage extends StatelessWidget {
       email: '',
       pw: '',
     );
+    BackEndCubitHandle.read(context).setUndoing();
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(

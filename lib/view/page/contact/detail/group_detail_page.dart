@@ -154,8 +154,6 @@ class GroupDetailPage extends StatelessWidget {
                                                         groupId: groupId,
                                                         url: null,
                                                       );
-
-                                                      Navigator.pop(context);
                                                     },
                                                   );
                                                 },
@@ -192,8 +190,6 @@ class GroupDetailPage extends StatelessWidget {
                                                             url: url,
                                                           ),
                                                         );
-
-                                                        Navigator.pop(context);
                                                       },
                                                     );
                                                     return;
@@ -216,8 +212,6 @@ class GroupDetailPage extends StatelessWidget {
                                                       url: url,
                                                     ),
                                                   );
-
-                                                  Navigator.pop(context);
                                                 },
                                               ),
                                             );

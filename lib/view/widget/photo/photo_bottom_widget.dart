@@ -39,6 +39,7 @@ class PhotoBottomWidget extends StatelessWidget {
                     ImageService.imageCrop(File(xfile.path)).then(
                       (file) {
                         if (file != null) {
+                          Navigator.pop(context);
                           // Call Db
                           dbUpdate.call(file);
                         }
@@ -73,6 +74,7 @@ class PhotoBottomWidget extends StatelessWidget {
                           ImageService.imageCrop(File(xfile.path)).then(
                             (file) {
                               if (file != null) {
+                                Navigator.pop(context);
                                 // Call Db
                                 dbUpdate.call(file);
                               }
@@ -100,6 +102,7 @@ class PhotoBottomWidget extends StatelessWidget {
           (imageNotNull)
               ? ListTile(
                   onTap: () {
+                    Navigator.pop(context);
                     delete.call();
                   },
                   title: Text(

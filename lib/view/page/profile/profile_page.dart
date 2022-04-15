@@ -110,8 +110,6 @@ class ProfilePage extends StatelessWidget {
                                             userId: userId,
                                             url: null,
                                           );
-
-                                          Navigator.pop(context);
                                         },
                                       );
                                     },
@@ -122,7 +120,6 @@ class ProfilePage extends StatelessWidget {
                                           user.profile!,
                                         ).then(
                                           (_) {
-                                            Navigator.pop(context);
                                             // Update Db
                                             User.dbService.updatePhotoProfile(
                                               userId: userId,
@@ -160,8 +157,6 @@ class ProfilePage extends StatelessWidget {
                                             userId: userId,
                                             url: url,
                                           );
-
-                                          Navigator.pop(context);
                                         },
                                       );
                                     },

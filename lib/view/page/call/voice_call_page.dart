@@ -56,67 +56,75 @@ class _VoiceCallPageState extends State<VoiceCallPage>
     // Life Cycle
     WidgetsBinding.instance!.addObserver(this);
     if (mounted) {
-      setState(() {
-        // Rtc
-        RtcService.initVoiceEngine((value) {
-          udpateRemoteId(value);
-        }).then(
-          (_) {
-            // Get Token
-            RtcApiService.getChannelToken(
-              channel: (widget.callType == CallType.caller)
-                  ? widget.yourId
-                  : widget.userId,
-              role: (widget.callType == CallType.caller)
-                  ? "publisher"
-                  : "audience",
-              uid: (widget.callType == CallType.caller) ? 0 : 1,
-            ).then(
-              (token) {
-                if (token != null) {
-                  // Join
-                  joinChannel(token);
-                  if (widget.callType == CallType.caller) {
-                    FirebaseUtils.dbUser(widget.yourId).get().then(
-                      (doc) {
-                        // Object
-                        final User user =
-                            User.fromMap(doc.data() as Map<String, dynamic>);
+      // Rtc
+      RtcService.initVoiceEngine((value) {
+        udpateRemoteId(value);
+      }).then(
+        (_) {
+          // Get Token
+          RtcApiService.getChannelToken(
+            channel: (widget.callType == CallType.caller)
+                ? widget.yourId
+                : widget.userId,
+            role:
+                (widget.callType == CallType.caller) ? "publisher" : "audience",
+            uid: (widget.callType == CallType.caller) ? 0 : 1,
+          ).then(
+            (token) {
+              if (token != null) {
+                // Join
+                joinChannel(token);
+                if (widget.callType == CallType.caller) {
+                  FirebaseUtils.dbUser(widget.yourId).get().then(
+                    (doc) {
+                      // Object
+                      final User user =
+                          User.fromMap(doc.data() as Map<String, dynamic>);
 
-                        NotificationService.sendNotification(
-                          title: user.name!,
-                          subject: "START VOICE CALL",
-                          topics: "from${widget.yourId}to${widget.userId}",
-                          type: "Voice Call",
-                          id: widget.yourId,
-                        );
-                      },
-                    );
-                  }
+                      NotificationService.sendNotification(
+                        title: user.name!,
+                        subject: "START VOICE CALL",
+                        topics: "from${widget.yourId}to${widget.userId}",
+                        type: "Voice Call",
+                        id: widget.yourId,
+                      );
+                    },
+                  );
                 }
-              },
-            );
-          },
-        );
-        // Db
-        Channel.checkChannelProcess(
-          userId: (widget.callType == CallType.caller)
-              ? widget.yourId
-              : widget.userId,
-          onFalse: () {
-            leaveChannel().then((_) => Navigator.pop(context));
-          },
-          onAccept: () {
-            updateIsAccept(true);
-          },
-        );
-      });
+              }
+            },
+          );
+        },
+      );
+      // Db
+      Channel.checkChannelProcess(
+        userId: (widget.callType == CallType.caller)
+            ? widget.yourId
+            : widget.userId,
+        onFalse: () {
+          leaveChannel().then(
+            (_) {
+              Navigator.pop(context);
+              // Update Db
+              Channel.dbService.updateCallingProcess(
+                userId: (widget.callType == CallType.caller)
+                    ? widget.yourId
+                    : widget.userId,
+                value: "Undoing",
+              );
+            },
+          );
+        },
+        onAccept: () {
+          updateIsAccept(true);
+        },
+      );
     }
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.detached) {
+    if (state == AppLifecycleState.inactive) {
       // Leave Channel
       leaveChannel();
     }
